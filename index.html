@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Picker</title>
+</head>
+<body>
+    <h1>Movie Picker</h1>
+
+     <!-- The Premise -->
+    <p>This is a movie picker</p><br>
+        <p>You answer a few simple questions and I'll pick a movie you should enjoy!</p>
+
+    <!-- The Questions -->
+    <p>Favourite Childhood film?</p>
+    <input type="text" id="childhoodFilm" placeholder="The Dark Knight, The Matrix, etc.">
+    <button>Save</button>
+
+    <p>What film do you always recommend others to watch?</p>
+    <input type="text" id="others-to-watch" placeholder="The Dark Knight, The Matrix, etc.">
+    <button>Save</button>
+
+    <p>What is the "coolest" film you've ever seen?</p>
+    <input type="text" id="coolestFilm" placeholder="The Dark Knight, The Matrix, etc.">
+    <button>Save</button>
+
+    <!-- The Button -->
+    <button onclick="getRandomMovie()">Get Random Movie</button>
+
+    <!-- The Results -->
+    <p id="result"></p>
+    
+    <script src="script.js"></script>
+</body>
+
+<!-- The Footer -->
+<footer>
+    <p>© 2025 Movie Picker by Asf Ahmad</p>
+</footer>
+
+</html>
