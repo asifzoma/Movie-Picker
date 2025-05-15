@@ -1,0 +1,121 @@
+.movie-picker-form {
+  &__group {
+    margin-bottom: $spacing-md;
+    position: relative;
+    transition: $transition-base;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+  
+  &__label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: 500;
+    color: $text-color;
+    transition: $transition-base;
+  }
+  
+  &__input {
+    width: 100%;
+    padding: $spacing-md;
+    border: 2px solid $light-gray;
+    border-radius: $border-radius;
+    transition: all 0.3s ease;
+    background-color: white;
+    
+    &:hover {
+      border-color: darken($light-gray, 10%);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+    }
+    
+    &::placeholder {
+      color: lighten($text-color, 40%);
+    }
+  }
+  
+  // Search input specific styles
+  &__search {
+    position: relative;
+    
+    .form__input {
+      padding-left: $spacing-xl;
+      padding-right: $spacing-xl;
+    }
+    
+    &::before {
+      content: '🔍';
+      position: absolute;
+      left: $spacing-sm;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      opacity: 0.6;
+      transition: $transition-base;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+  
+  // Select styles
+  &__select {
+    appearance: none;
+    background-image: url('../assets/chevron-down.svg');
+    background-repeat: no-repeat;
+    background-position: right $spacing-md center;
+    padding-right: $spacing-xl;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba($light-gray, 0.1);
+    }
+  }
+  
+  // Checkbox styles
+  &__checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $border-radius;
+    transition: $transition-base;
+    
+    input[type="checkbox"] {
+      margin-right: $spacing-sm;
+      cursor: pointer;
+    }
+
+    &:hover {
+      background-color: rgba($light-gray, 0.2);
+    }
+  }
+  
+  // Form layout
+  &--inline {
+    display: flex;
+    gap: $spacing-md;
+    align-items: flex-end;
+    
+    .form__group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+  }
+
+  // Focus state for the entire group
+  &__group:focus-within {
+    .form__label {
+      color: $primary-color;
+      transform: translateY(-2px);
+    }
+  }
+} 

@@ -1,0 +1,52 @@
+.btn {
+  @include button-base;
+  
+  // Primary button
+  &--primary {
+    background-color: $primary-color;
+    color: white;
+    
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+  
+  // Secondary button
+  &--secondary {
+    background-color: $secondary-color;
+    color: white;
+    
+    &:hover {
+      background-color: darken($secondary-color, 10%);
+    }
+  }
+  
+  // Outline button
+  &--outline {
+    background-color: transparent;
+    border: 2px solid $primary-color;
+    color: $primary-color;
+    
+    &:hover {
+      background-color: $primary-color;
+      color: white;
+    }
+  }
+  
+  // Disabled state
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  // Button sizes
+  &--small {
+    padding: $spacing-xs $spacing-sm;
+    font-size: 0.875rem;
+  }
+  
+  &--large {
+    padding: $spacing-md $spacing-lg;
+    font-size: 1.125rem;
+  }
+} 
