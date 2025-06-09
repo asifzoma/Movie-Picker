@@ -1,5 +1,17 @@
 // API Configuration
-const IMAGE_BASE_URL = document.querySelector('meta[name="tmdb-image-base-url"]').content;
+let IMAGE_BASE_URL;
+
+// Function to initialize configuration
+function initConfig() {
+    const metaTag = document.querySelector('meta[name="tmdb-image-base-url"]');
+    if (!metaTag) {
+        console.error('TMDB image base URL meta tag not found');
+        IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // Fallback URL
+    } else {
+        IMAGE_BASE_URL = metaTag.content;
+    }
+    console.log('Initialized IMAGE_BASE_URL:', IMAGE_BASE_URL);
+}
 
 // DOM Elements
 const elements = {
@@ -28,5 +40,12 @@ const elements = {
     explanation: document.getElementById('explanation'),
     journeyElement: document.getElementById('journey')
 };
+
+// Initialize configuration when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initConfig);
+} else {
+    initConfig();
+}
 
 export { IMAGE_BASE_URL, elements }; 
