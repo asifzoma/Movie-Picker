@@ -202,17 +202,17 @@
                     </div>
                 </div>
                 
-                <!-- Error state -->
-                <div id="error-section" class="hidden mt-12 bg-red-900 bg-opacity-30 rounded-xl p-6 border border-red-700">
-                    <div class="flex items-start">
-                        <i class="fas fa-exclamation-triangle text-red-400 text-2xl mr-4 mt-1"></i>
-                        <div>
-                            <h3 class="bebas text-2xl text-red-200 mb-2">Oops! Something Went Wrong</h3>
-                            <p id="error-message" class="text-gray-300">We couldn't generate a recommendation. Please try again later.</p>
-                            <button id="error-retry" class="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-white transition-colors">
-                                <i class="fas fa-redo mr-2"></i> Try Again
-                            </button>
+                <!-- Error section -->
+                <div id="error-section" class="hidden mt-12 text-center py-20">
+                    <div class="space-y-4">
+                        <div class="flex justify-center">
+                            <i class="fas fa-exclamation-circle text-6xl text-red-500"></i>
                         </div>
+                        <h3 class="bebas text-3xl mb-2">Oops! Something Went Wrong</h3>
+                        <p id="error-message" class="text-gray-400">Failed to generate a recommendation. Please try again.</p>
+                        <button id="error-retry" class="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300">
+                            <i class="fas fa-redo mr-2"></i> Try Again
+                        </button>
                     </div>
                 </div>
             </main>
