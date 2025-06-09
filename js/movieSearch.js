@@ -9,14 +9,26 @@ const selectedMovies = {
 
 // Movie search function with debounce
 function searchMovies(query, dropdownId) {
+    console.log('Searching for:', query);
+    
     if (query.length < 2) {
         document.getElementById(`${dropdownId}-dropdown`).classList.add('hidden');
         return;
     }
     
     fetch(`api.php?action=search&query=${encodeURIComponent(query)}`)
-        .then(response => response.json())
+        .then(response => response.text())
+        .then(text => {
+            console.log('Raw response:', text); // Log the raw response
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse JSON:', text);
+                throw new Error('Invalid JSON response');
+            }
+        })
         .then(data => {
+            console.log('Parsed data:', data);
             const dropdown = document.getElementById(`${dropdownId}-dropdown`);
             dropdown.innerHTML = '';
             

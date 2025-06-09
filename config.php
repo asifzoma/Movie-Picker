@@ -28,10 +28,10 @@ function loadEnv($path = '.env') {
 loadEnv();
 
 // TMDB API Configuration
-define('TMDB_API_KEY', getenv('TMDB_API_KEY'));
-define('TMDB_API_READ_ACCESS_TOKEN', getenv('TMDB_API_READ_ACCESS_TOKEN'));
-define('TMDB_BASE_URL', getenv('TMDB_BASE_URL'));
-define('TMDB_IMAGE_BASE_URL', getenv('TMDB_IMAGE_BASE_URL'));
+define('TMDB_API_KEY', 'f53eb59c823aca6458aaf8771eead260');
+define('TMDB_API_READ_ACCESS_TOKEN', 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNTNlYjU5YzgyM2FjYTY0NThhYWY4NzcxZWVhZDI2MCIsIm5iZiI6MTc0NTg4MjYzNy4yNjU5OTk4LCJzdWIiOiI2ODEwMGUwZGE5MGFjYWY2ZWVlYWYwOGEiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.pVGEnPYq74nsZpT2abeEU-2oDXsCKRF-10nOTpulawI');
+define('TMDB_BASE_URL', 'https://api.themoviedb.org/3');
+define('TMDB_IMAGE_BASE_URL', 'https://image.tmdb.org/t/p/w500');
 
 // Error reporting based on environment
 if (getenv('APP_ENV') === 'development' && getenv('APP_DEBUG') === 'true') {
