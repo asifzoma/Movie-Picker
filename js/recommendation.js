@@ -18,6 +18,10 @@ function generateExplanation(movie) {
 function displayRecommendation(movie, journey) {
     elements.loadingSection.classList.add('hidden');
     elements.resultSection.classList.remove('hidden');
+    elements.resultSection.classList.add('fade-in');
+    
+    // Scroll to the recommendation section
+    elements.resultSection.scrollIntoView({ behavior: 'smooth' });
     
     // Set movie details
     elements.movieTitle.textContent = movie.title;

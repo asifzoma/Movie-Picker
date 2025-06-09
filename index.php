@@ -188,10 +188,17 @@
                 
                 <!-- Loading state -->
                 <div id="loading-section" class="hidden mt-12 text-center py-20">
-                    <div class="animate-pulse">
-                        <i class="fas fa-film text-5xl mb-6 text-pink-500"></i>
-                        <h3 class="bebas text-3xl mb-4">Crafting Your Recommendation</h3>
+                    <div class="animate-pulse space-y-4">
+                        <div class="flex justify-center">
+                            <i class="fas fa-film text-6xl text-pink-500 animate-spin"></i>
+                        </div>
+                        <h3 class="bebas text-3xl mb-2">Crafting Your Recommendation</h3>
                         <p class="text-gray-400">Analyzing your movie choices...</p>
+                        <div class="flex justify-center space-x-2">
+                            <div class="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                            <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
                     </div>
                 </div>
                 
