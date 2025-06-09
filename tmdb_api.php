@@ -1,0 +1,43 @@
+<?php
+require_once 'config.php';
+
+class TMDBApi {
+    private static function makeRequest($endpoint, $params = []) {
+        $params['api_key'] = TMDB_API_KEY;
+        $url = TMDB_BASE_URL . $endpoint . '?' . http_build_query($params);
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        return json_decode($response, true);
+    }
+    
+    public static function searchMovies($query) {
+        return self::makeRequest('/search/movie', ['query' => $query]);
+    }
+    
+    public static function getMovieDetails($movieId) {
+        return self::makeRequest("/movie/$movieId");
+    }
+    
+    public static function getMovieCredits($movieId) {
+        return self::makeRequest("/movie/$movieId/credits");
+    }
+    
+    public static function getPersonCredits($personId) {
+        return self::makeRequest("/person/$personId/combined_credits");
+    }
+    
+    public static function getSimilarMovies($movieId) {
+        return self::makeRequest("/movie/$movieId/similar");
+    }
+    
+    public static function getPopularMovies() {
+        return self::makeRequest("/movie/popular");
+    }
+} 
