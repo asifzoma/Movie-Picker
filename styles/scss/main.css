@@ -177,9 +177,9 @@ a:hover {
   font-size: 0.9375rem;
   line-height: 1.5;
   margin-bottom: 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  display: box;
+  line-clamp: 3;
+  box-orient: vertical;
   overflow: hidden;
 }
 .movie-card__footer {
@@ -276,4 +276,14 @@ a:hover {
 .form--inline .form__group {
   flex: 1;
   margin-bottom: 0;
-}/*# sourceMappingURL=main.css.map */
+}
+
+/* Add a fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
