@@ -287,3 +287,40 @@ a:hover {
 .fade-in {
   animation: fadeIn 0.5s ease-in;
 }
+
+.search-dropdown {
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 50;
+    width: 100%;
+    min-width: 300px;
+}
+
+.search-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-item img {
+    width: 60px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.selected-movie {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.selected-movie img {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 0.75rem;
+}

@@ -41,7 +41,29 @@ function searchMovies(query, dropdownId) {
                     `;
                     
                     item.addEventListener('click', () => {
-                        document.getElementById(dropdownId).value = movie.title;
+                        const input = document.getElementById(dropdownId);
+                        input.value = movie.title;
+                        
+                        // Create or update the selected movie display
+                        let selectedDisplay = input.parentElement.querySelector('.selected-movie');
+                        if (!selectedDisplay) {
+                            selectedDisplay = document.createElement('div');
+                            selectedDisplay.className = 'selected-movie';
+                            input.parentElement.appendChild(selectedDisplay);
+                        }
+                        
+                        selectedDisplay.innerHTML = `
+                            ${movie.poster_path ? 
+                                `<img src="${IMAGE_BASE_URL}${movie.poster_path}" alt="${movie.title}">` :
+                                `<div class="w-10 h-15 bg-gray-700 rounded flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image"></i>
+                                </div>`}
+                            <div>
+                                <div class="font-medium">${movie.title}</div>
+                                <div class="text-sm text-gray-400">${movie.release_date ? movie.release_date.split('-')[0] : 'Unknown year'}</div>
+                            </div>
+                        `;
+                        
                         selectedMovies[dropdownId] = {
                             id: movie.id,
                             title: movie.title,
