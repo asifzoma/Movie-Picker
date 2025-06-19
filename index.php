@@ -152,35 +152,56 @@
                         </button>
                     </div>
                     
-                    <div id="recommendation" class="bg-gray-900 bg-opacity-90 rounded-xl p-6 md:p-8 shadow-xl border border-gray-800 film-card">
-                        <div class="flex flex-col md:flex-row gap-8">
-                            <div id="poster-container" class="w-full md:w-1/3 flex-shrink-0">
-                                <img id="movie-poster" src="https://via.placeholder.com/300x450" alt="Recommended movie" class="w-full rounded-lg shadow-lg">
-                                <p id="movie-rating" class="mt-4 flex items-center">
-                                    <i class="fas fa-star text-yellow-400 mr-2"></i>
-                                    <span id="rating-value" class="font-bold">-</span>/10
-                                    <span id="vote-count" class="text-gray-400 ml-2 text-sm">(0 votes)</span>
-                                </p>
-                            </div>
-                            
-                            <div class="flex-grow">
-                                <h3 id="movie-title" class="bebas text-4xl md:text-5xl mb-2">Movie Title</h3>
-                                <p id="movie-year" class="text-lg text-gray-300 mb-4">Year</p>
-                                
-                                <div class="mb-6">
-                                    <h4 class="text-xl font-bold mb-2 text-pink-400">Why We Chose This For You</h4>
-                                    <p id="explanation" class="text-gray-300 leading-relaxed">
-                                        Your unique cinematic journey led us to this recommendation. Starting from your selections, we traced through connections of writers and directors to find this hidden gem.
+                    <!-- Swipe container for Tinder-like interface -->
+                    <div class="swipe-container">
+                        <div id="recommendation" class="swipe-card">
+                            <div class="flex flex-col gap-3">
+                                <div id="poster-container" class="w-full">
+                                    <img id="movie-poster" src="https://via.placeholder.com/300x450" alt="Recommended movie" class="w-full rounded-lg shadow-lg">
+                                    <p id="movie-rating" class="mt-3 flex items-center">
+                                        <i class="fas fa-star text-yellow-400 mr-2"></i>
+                                        <span id="rating-value" class="font-bold">-</span>/10
+                                        <span id="vote-count" class="text-gray-400 ml-2 text-sm">(0 votes)</span>
                                     </p>
                                 </div>
                                 
-                                <div id="journey" class="space-y-4">
-                                    <h4 class="text-xl font-bold mb-4 text-purple-400">You Might Also Like</h4>
-                                    <div class="flex flex-col gap-4">
-                                        <!-- Alternative recommendations will be inserted here -->
+                                <div>
+                                    <h3 id="movie-title" class="bebas text-xl mb-1">Movie Title</h3>
+                                    <p id="movie-year" class="text-sm text-gray-300 mb-2">Year</p>
+                                    
+                                    <div class="mb-3">
+                                        <h4 class="text-base font-bold mb-1 text-pink-400">Synopsis</h4>
+                                        <p id="movie-overview" class="text-xs text-gray-300 leading-relaxed line-clamp-3"></p>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p id="explanation" class="text-xs text-purple-400 italic leading-relaxed">
+                                            Your unique cinematic journey led us to this recommendation.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Movie action buttons -->
+                        <div class="movie-actions">
+                            <button class="action-btn dislike" id="dislike-btn" aria-label="Dislike movie">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <button class="action-btn like" id="like-btn" aria-label="Like movie">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden stack for next movies -->
+                    <div id="movie-stack" class="hidden"></div>
+                    
+                    <!-- Saved movies tray -->
+                    <div class="saved-movies">
+                        <h3 class="text-xl font-bold mb-4 text-purple-400">Saved Movies</h3>
+                        <div id="saved-movies-container" class="saved-movies-container">
+                            <!-- Saved movies will be added here -->
                         </div>
                     </div>
                 </div>
@@ -209,7 +230,7 @@
                         </div>
                         <h3 class="bebas text-3xl mb-2">Oops! Something Went Wrong</h3>
                         <p id="error-message" class="text-gray-400">Failed to generate a recommendation. Please try again.</p>
-                        <button id="error-retry" class="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300">
+                        <button onclick="window.location.href = window.location.pathname" class="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300">
                             <i class="fas fa-redo mr-2"></i> Try Again
                         </button>
                     </div>

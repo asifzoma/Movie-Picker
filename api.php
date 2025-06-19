@@ -52,6 +52,94 @@ switch ($_GET['action']) {
         $url .= '?' . http_build_query($params);
         break;
         
+    case 'more_movies':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            error_log("Invalid more_movies request: must be POST");
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $requestData = json_decode(urldecode($_POST['data']), true);
+        if (!$requestData || !isset($requestData['movies']) || !isset($requestData['page']) || !isset($requestData['exclude_ids'])) {
+            error_log("Invalid more_movies request: missing data");
+            echo json_encode(['error' => 'Invalid request data']);
+            exit;
+        }
+        
+        error_log("Processing more movies request: " . print_r($requestData, true));
+        
+        try {
+            // Build preference profile from user's movies
+            $preferenceProfile = [
+                'genres' => []
+            ];
+            
+            // Get detailed info for each movie to build profile
+            foreach ($requestData['movies'] as $movie) {
+                if (!isset($movie['id'])) continue;
+                
+                $detailUrl = TMDB_BASE_URL . '/movie/' . $movie['id'] . '?append_to_response=credits';
+                $detailResponse = file_get_contents($detailUrl, false, $context);
+                
+                if ($detailResponse !== false) {
+                    $details = json_decode($detailResponse, true);
+                    
+                    // Collect genres
+                    if (isset($details['genres'])) {
+                        foreach ($details['genres'] as $genre) {
+                            $preferenceProfile['genres'][$genre['id']] = ($preferenceProfile['genres'][$genre['id']] ?? 0) + 1;
+                        }
+                    }
+                }
+            }
+            
+            $recommendations = [];
+            
+            // Use genre-based recommendation
+            if (!empty($preferenceProfile['genres'])) {
+                arsort($preferenceProfile['genres']);
+                $topGenres = array_slice(array_keys($preferenceProfile['genres']), 0, 2);
+                
+                $discoverUrl = TMDB_BASE_URL . '/discover/movie?' . http_build_query([
+                    'with_genres' => implode('|', $topGenres),
+                    'vote_average.gte' => 7.0,
+                    'vote_count.gte' => 1000,
+                    'sort_by' => 'vote_average.desc',
+                    'page' => $requestData['page']
+                ]);
+                
+                $discoverResponse = file_get_contents($discoverUrl, false, $context);
+                if ($discoverResponse !== false) {
+                    $discoverData = json_decode($discoverResponse, true);
+                    
+                    foreach ($discoverData['results'] ?? [] as $movie) {
+                        if (!in_array($movie['id'], $requestData['exclude_ids'])) {
+                            $recommendations[] = $movie;
+                            if (count($recommendations) >= 3) break;
+                        }
+                    }
+                }
+            }
+            
+            if (!empty($recommendations)) {
+                echo json_encode([
+                    'success' => true,
+                    'new_movies' => $recommendations,
+                    'has_more' => count($discoverData['results'] ?? []) > count($recommendations)
+                ]);
+                exit;
+            } else {
+                echo json_encode(['error' => 'No more recommendations available']);
+                exit;
+            }
+            
+        } catch (Exception $e) {
+            error_log("Error in more_movies logic: " . $e->getMessage());
+            echo json_encode(['error' => 'Failed to load more movies']);
+            exit;
+        }
+        break;
+        
     case 'recommend':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             error_log("Invalid recommend request: must be POST");
@@ -167,100 +255,6 @@ switch ($_GET['action']) {
         } catch (Exception $e) {
             error_log("Error in recommendation logic: " . $e->getMessage());
             echo json_encode(['error' => 'Failed to generate recommendation']);
-            exit;
-        }
-        
-        break;
-        
-    case 'more_movies':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            error_log("Invalid more_movies request: must be POST");
-            echo json_encode(['error' => 'Invalid request method']);
-            exit;
-        }
-        
-        $data = json_decode(urldecode($_POST['data']), true);
-        if (!$data || !isset($data['movies']) || !isset($data['page']) || !isset($data['exclude_ids'])) {
-            error_log("Invalid more_movies request: missing data");
-            echo json_encode(['error' => 'Invalid data']);
-            exit;
-        }
-        
-        $movies = $data['movies'];
-        $page = $data['page'];
-        $excludeIds = $data['exclude_ids'];
-        
-        try {
-            // Build preference profile from user's movies
-            $preferenceProfile = [
-                'genres' => [],
-                'vote_averages' => []
-            ];
-            
-            // Get detailed info for each movie to build profile
-            foreach ($movies as $key => $movie) {
-                if (!isset($movie['id'])) continue;
-                
-                $detailUrl = TMDB_BASE_URL . '/movie/' . $movie['id'] . '?append_to_response=credits';
-                $detailResponse = file_get_contents($detailUrl, false, $context);
-                
-                if ($detailResponse !== false) {
-                    $details = json_decode($detailResponse, true);
-                    
-                    // Collect genres
-                    if (isset($details['genres'])) {
-                        foreach ($details['genres'] as $genre) {
-                            $preferenceProfile['genres'][$genre['id']] = ($preferenceProfile['genres'][$genre['id']] ?? 0) + 1;
-                        }
-                    }
-                    
-                    $preferenceProfile['vote_averages'][] = $details['vote_average'];
-                }
-            }
-            
-            $newRecommendations = [];
-            
-            // Get more genre-based recommendations
-            if (!empty($preferenceProfile['genres'])) {
-                arsort($preferenceProfile['genres']);
-                $topGenres = array_slice(array_keys($preferenceProfile['genres']), 0, 2);
-                
-                $discoverUrl = TMDB_BASE_URL . '/discover/movie?' . http_build_query([
-                    'with_genres' => implode('|', $topGenres),
-                    'vote_average.gte' => 7.0,
-                    'vote_count.gte' => 1000,
-                    'sort_by' => 'vote_average.desc',
-                    'page' => $page
-                ]);
-                
-                $discoverResponse = file_get_contents($discoverUrl, false, $context);
-                if ($discoverResponse !== false) {
-                    $discoverData = json_decode($discoverResponse, true);
-                    
-                    foreach ($discoverData['results'] ?? [] as $movie) {
-                        if (!in_array($movie['id'], $excludeIds)) {
-                            $newRecommendations[] = $movie;
-                            if (count($newRecommendations) >= 3) break; // Get 3 more movies
-                        }
-                    }
-                }
-            }
-            
-            if (!empty($newRecommendations)) {
-                echo json_encode([
-                    'success' => true,
-                    'new_movies' => $newRecommendations,
-                    'has_more' => count($discoverData['results'] ?? []) > 3
-                ]);
-                exit;
-            } else {
-                echo json_encode(['error' => 'No more movies found']);
-                exit;
-            }
-            
-        } catch (Exception $e) {
-            error_log("Error in more_movies logic: " . $e->getMessage());
-            echo json_encode(['error' => 'Failed to get more movies']);
             exit;
         }
         

@@ -14,38 +14,81 @@
   }
 }
 
-// Flexbox center
+// Flexbox mixins
 @mixin flex-center {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
-// Card shadow
-@mixin card-shadow {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: $transition-base;
-  
-  &:hover {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Media queries
+@mixin mobile {
+  @media (max-width: 767px) {
+    @content;
   }
 }
 
-// Button styles
-@mixin button-base {
-  padding: $spacing-sm $spacing-md;
-  border-radius: $border-radius;
-  border: none;
-  cursor: pointer;
-  transition: $transition-base;
-  font-family: $font-primary;
+@mixin tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    @content;
+  }
 }
 
-// Truncate text
-@mixin text-truncate {
+@mixin desktop {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+// Common patterns
+@mixin button-base {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: var(--transition-base);
+  
+  &:hover {
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@mixin truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@mixin overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // Grid layout

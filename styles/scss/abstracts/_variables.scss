@@ -1,9 +1,60 @@
 // Colors
-$primary-color: #2c3e50;
-$secondary-color: #e74c3c;
-$background-color: #f8f9fa;
-$text-color: #333333;
-$light-gray: #ecf0f1;
+:root {
+  // Base colors
+  --color-primary: #6366f1;
+  --color-secondary: #4f46e5;
+  --color-accent: #f472b6;
+  
+  // Status colors
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  
+  // Text colors
+  --color-text: #f8fafc;
+  --color-text-light: #cbd5e1;
+  --color-text-dark: #1e293b;
+  
+  // Background colors
+  --color-bg: #0f172a;
+  --color-bg-light: #1e293b;
+  --color-bg-dark: #020617;
+  
+  // Border colors
+  --color-border: #334155;
+  --color-border-light: #475569;
+  
+  // Overlay colors
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  
+  // RGB values for opacity variations
+  --color-success-rgb: 34, 197, 94;
+  --color-error-rgb: 239, 68, 68;
+  
+  // Spacing
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  // Border radius
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+  
+  // Transitions
+  --transition-base: all 0.2s ease;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  // Z-index
+  --z-below: -1;
+  --z-normal: 1;
+  --z-above: 10;
+  --z-modal: 100;
+  --z-tooltip: 1000;
+}
 
 // Typography
 $font-primary: 'Inter', sans-serif;
@@ -11,13 +62,6 @@ $font-size-base: 16px;
 $font-size-h1: 2.5rem;
 $font-size-h2: 2rem;
 $font-size-h3: 1.75rem;
-
-// Spacing
-$spacing-xs: 0.25rem;
-$spacing-sm: 0.5rem;
-$spacing-md: 1rem;
-$spacing-lg: 1.5rem;
-$spacing-xl: 2rem;
 
 // Breakpoints
 $breakpoint-sm: 576px;
