@@ -175,10 +175,9 @@
                                 </div>
                                 
                                 <div id="journey" class="space-y-4">
-                                    <h4 class="text-xl font-bold mb-2 text-purple-400">Your Cinematic Journey</h4>
-                                    <div class="flex items-center text-gray-300">
-                                        <i class="fas fa-long-arrow-alt-right text-xl mr-3 text-blue-400"></i>
-                                        <span>Starting point</span>
+                                    <h4 class="text-xl font-bold mb-4 text-purple-400">You Might Also Like</h4>
+                                    <div class="flex flex-col gap-4">
+                                        <!-- Alternative recommendations will be inserted here -->
                                     </div>
                                 </div>
                             </div>

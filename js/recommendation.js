@@ -14,8 +14,8 @@ function generateExplanation(movie) {
     elements.explanation.textContent = explanations[Math.floor(Math.random() * explanations.length)];
 }
 
-// Display the recommendation
-function displayRecommendation(movie, journey) {
+// Display the recommendation with alternatives
+function displayRecommendation(movie, alternatives) {
     elements.loadingSection.classList.add('hidden');
     elements.resultSection.classList.remove('hidden');
     elements.resultSection.classList.add('fade-in');
@@ -37,49 +37,37 @@ function displayRecommendation(movie, journey) {
         elements.moviePoster.src = 'https://via.placeholder.com/300x450/1a1a1a/ffffff?text=No+Poster';
     }
     
-    // Build the journey display
-    elements.journeyElement.innerHTML = '<h4 class="text-xl font-bold mb-2 text-purple-400">Your Cinematic Journey</h4>';
+    // Build the alternatives display
+    elements.journeyElement.innerHTML = '<h4 class="text-xl font-bold mb-4 text-purple-400">You Might Also Like</h4>';
     
-    journey.forEach(step => {
-        const stepElement = document.createElement('div');
-        stepElement.className = 'flex items-center text-gray-300 mb-2';
+    alternatives.forEach((altMovie, index) => {
+        const altElement = document.createElement('div');
+        altElement.className = 'flex items-center text-gray-300 mb-4 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer';
         
-        let icon = '';
-        let text = '';
+        const posterUrl = altMovie.poster_path ? 
+            IMAGE_BASE_URL + altMovie.poster_path : 
+            'https://via.placeholder.com/60x90/1a1a1a/ffffff?text=No+Poster';
         
-        switch(step.type) {
-            case 'start':
-                icon = '<i class="fas fa-play-circle text-xl mr-3 text-blue-400"></i>';
-                text = `We started with "${step.movieTitle}" (${step.year}), your highest-rated selection`;
-                break;
-            case 'writer':
-                icon = '<i class="fas fa-pen-fancy text-xl mr-3 text-green-400"></i>';
-                text = `Found writer ${step.personName} from "${step.movieTitle}"`;
-                break;
-            case 'best_writer_movie':
-                icon = '<i class="fas fa-star text-xl mr-3 text-yellow-400"></i>';
-                text = `${step.personName}'s best work is "${step.movieTitle}" (${step.year})`;
-                break;
-            case 'director':
-                icon = '<i class="fas fa-video text-xl mr-3 text-indigo-400"></i>';
-                text = `Discovered director ${step.personName} from "${step.movieTitle}"`;
-                break;
-            case 'final_recommendation':
-                icon = '<i class="fas fa-film text-xl mr-3 text-pink-400"></i>';
-                text = `${step.personName}'s highest-rated film is "${step.movieTitle}" (${step.year})`;
-                break;
-            case 'fallback':
-                icon = '<i class="fas fa-random text-xl mr-3 text-orange-400"></i>';
-                text = `Since connections got tricky, we found a movie similar to "${step.seedMovieTitle}"`;
-                break;
-            case 'final_fallback':
-                icon = '<i class="fas fa-fire text-xl mr-3 text-orange-400"></i>';
-                text = `As a last resort, we're recommending this popular film`;
-                break;
-        }
+        altElement.innerHTML = `
+            <img src="${posterUrl}" alt="${altMovie.title}" class="w-15 h-20 object-cover rounded mr-4" onerror="this.src='https://via.placeholder.com/60x90/1a1a1a/ffffff?text=No+Poster';">
+            <div class="flex-grow">
+                <div class="font-medium">${altMovie.title}</div>
+                <div class="text-sm text-gray-400">
+                    ${altMovie.release_date ? altMovie.release_date.split('-')[0] : 'Unknown year'}
+                    <span class="ml-2">
+                        <i class="fas fa-star text-yellow-400 mr-1"></i>
+                        ${altMovie.vote_average ? altMovie.vote_average.toFixed(1) : 'N/A'}/10
+                    </span>
+                </div>
+            </div>
+        `;
         
-        stepElement.innerHTML = `${icon}<span>${text}</span>`;
-        elements.journeyElement.appendChild(stepElement);
+        // Add click handler to select this alternative as main recommendation
+        altElement.addEventListener('click', () => {
+            displayRecommendation(altMovie, alternatives.filter((_, i) => i !== index).concat([movie]));
+        });
+        
+        elements.journeyElement.appendChild(altElement);
     });
     
     // Generate fun explanation

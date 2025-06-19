@@ -68,9 +68,108 @@ switch ($_GET['action']) {
         
         error_log("Processing recommendation for movies: " . print_r($movies, true));
         
-        // Get recommendations based on the most watched movie
-        $url = TMDB_BASE_URL . '/movie/' . $movies['watched']['id'] . '/recommendations';
-        $url .= '?' . http_build_query([]);
+        try {
+            // Build preference profile from user's movies
+            $preferenceProfile = [
+                'genres' => [],
+                'vote_averages' => []
+            ];
+            
+            // Get detailed info for each movie to build profile
+            foreach ($movies as $key => $movie) {
+                if (!isset($movie['id'])) continue;
+                
+                $detailUrl = TMDB_BASE_URL . '/movie/' . $movie['id'] . '?append_to_response=credits';
+                $detailResponse = file_get_contents($detailUrl, false, $context);
+                
+                if ($detailResponse !== false) {
+                    $details = json_decode($detailResponse, true);
+                    
+                    // Collect genres
+                    if (isset($details['genres'])) {
+                        foreach ($details['genres'] as $genre) {
+                            $preferenceProfile['genres'][$genre['id']] = ($preferenceProfile['genres'][$genre['id']] ?? 0) + 1;
+                        }
+                    }
+                    
+                    $preferenceProfile['vote_averages'][] = $details['vote_average'];
+                }
+            }
+            
+            $recommendations = [];
+            
+            // Use only genre-based recommendation (Tier 2)
+            if (!empty($preferenceProfile['genres'])) {
+                arsort($preferenceProfile['genres']);
+                $topGenres = array_slice(array_keys($preferenceProfile['genres']), 0, 2);
+                
+                $discoverUrl = TMDB_BASE_URL . '/discover/movie?' . http_build_query([
+                    'with_genres' => implode('|', $topGenres),
+                    'vote_average.gte' => 7.0,
+                    'vote_count.gte' => 1000,
+                    'sort_by' => 'vote_average.desc',
+                    'page' => 1
+                ]);
+                
+                $discoverResponse = file_get_contents($discoverUrl, false, $context);
+                if ($discoverResponse !== false) {
+                    $discoverData = json_decode($discoverResponse, true);
+                    
+                    foreach ($discoverData['results'] ?? [] as $movie) {
+                        if (!in_array($movie['id'], array_column($movies, 'id'))) {
+                            $recommendations[] = $movie;
+                            if (count($recommendations) >= 3) break; // Get 3 movies
+                        }
+                    }
+                }
+            }
+            
+            // If we don't have enough genre-based recommendations, get more from page 2
+            if (count($recommendations) < 3 && !empty($preferenceProfile['genres'])) {
+                $discoverUrl = TMDB_BASE_URL . '/discover/movie?' . http_build_query([
+                    'with_genres' => implode('|', $topGenres),
+                    'vote_average.gte' => 7.0,
+                    'vote_count.gte' => 1000,
+                    'sort_by' => 'vote_average.desc',
+                    'page' => 2
+                ]);
+                
+                $discoverResponse = file_get_contents($discoverUrl, false, $context);
+                if ($discoverResponse !== false) {
+                    $discoverData = json_decode($discoverResponse, true);
+                    
+                    foreach ($discoverData['results'] ?? [] as $movie) {
+                        if (!in_array($movie['id'], array_column($movies, 'id')) && 
+                            !in_array($movie['id'], array_column($recommendations, 'id'))) {
+                            $recommendations[] = $movie;
+                            if (count($recommendations) >= 3) break;
+                        }
+                    }
+                }
+            }
+            
+            if (!empty($recommendations)) {
+                // Separate main recommendation and alternatives
+                $mainRecommendation = array_shift($recommendations);
+                $alternatives = array_slice($recommendations, 0, 2);
+                
+                echo json_encode([
+                    'success' => true,
+                    'recommendation' => $mainRecommendation,
+                    'alternatives' => $alternatives
+                ]);
+                exit;
+            } else {
+                echo json_encode(['error' => 'Could not find suitable recommendations']);
+                exit;
+            }
+            
+        } catch (Exception $e) {
+            error_log("Error in recommendation logic: " . $e->getMessage());
+            echo json_encode(['error' => 'Failed to generate recommendation']);
+            exit;
+        }
+        
         break;
         
     default:
@@ -99,42 +198,8 @@ try {
         exit;
     }
     
-    // Handle recommendation response
-    if ($_GET['action'] === 'recommend' && isset($data['results']) && !empty($data['results'])) {
-        // Sort by vote average and count to get the best recommendation
-        usort($data['results'], function($a, $b) {
-            $scoreA = ($a['vote_average'] * 0.7) + (min($a['vote_count'] / 1000, 1) * 0.3);
-            $scoreB = ($b['vote_average'] * 0.7) + (min($b['vote_count'] / 1000, 1) * 0.3);
-            return $scoreB <=> $scoreA;
-        });
-        
-        // Get the best recommendation
-        $recommendation = $data['results'][0];
-        
-        // Create a journey narrative
-        $journey = [
-            [
-                'type' => 'start',
-                'movieTitle' => $movies['watched']['title'],
-                'year' => $movies['watched']['year']
-            ],
-            [
-                'type' => 'final_recommendation',
-                'movieTitle' => $recommendation['title'],
-                'year' => substr($recommendation['release_date'], 0, 4),
-                'personName' => 'The Algorithm'
-            ]
-        ];
-        
-        echo json_encode([
-            'success' => true,
-            'recommendation' => $recommendation,
-            'journey' => $journey
-        ]);
-    } else {
-        // For search, just return the raw response
-        echo $response;
-    }
+    // For search, just return the raw response
+    echo $response;
     
     error_log("Successfully processed API response");
     
