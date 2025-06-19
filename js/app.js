@@ -35,7 +35,7 @@ elements.form.addEventListener('submit', async (e) => {
         const data = await response.json();
         
         if (data.success && data.recommendation) {
-            displayRecommendation(data.recommendation, data.alternatives || []);
+            displayRecommendation(data.recommendation, data.alternatives || [], selectedMovies);
         } else {
             throw new Error(data.error || 'Failed to generate recommendation');
         }
