@@ -180,4 +180,4 @@ function showError(message) {
     elements.errorSection.classList.remove('hidden');
 }
 
-export { displayRecommendation, showError }; 
+export { displayRecommendation, showError, generateMovieCardContent }; 

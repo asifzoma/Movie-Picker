@@ -1,0 +1,29 @@
+{
+    "session_id": "momo_689638a292f0e0.02100243",
+    "created_at": 1754675362,
+    "liked_movies": [
+        {
+            "id": 568160,
+            "title": "Weathering with You",
+            "poster_path": "\/qgrk7r1fV4IjuoeiGS5HOhXNdLJ.jpg",
+            "release_date": "2019-01-01",
+            "vote_average": 8,
+            "genres": [],
+            "director": null,
+            "liked_at": 1754683930
+        }
+    ],
+    "user_preferences": {
+        "genres": [],
+        "directors": [],
+        "actors": [],
+        "vote_average_range": [
+            7,
+            10
+        ],
+        "year_range": [
+            1950,
+            "2025"
+        ]
+    }
+}

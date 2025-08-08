@@ -3,8 +3,13 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Include configuration
+// Include configuration and classes
 require_once 'config.php';
+require_once 'SessionManager.php';
+require_once 'RecommendationEngine.php';
+
+// Initialize session manager
+$sessionManager = new SessionManager();
 
 // Log the request
 if (isset($_GET['query'])) {
@@ -157,94 +162,36 @@ switch ($_GET['action']) {
         error_log("Processing recommendation for movies: " . print_r($movies, true));
         
         try {
-            // Build preference profile from user's movies
-            $preferenceProfile = [
-                'genres' => [],
-                'vote_averages' => []
+            // Convert movies object to array
+            $userMovies = [
+                $movies['childhood'],
+                $movies['recommend'],
+                $movies['watched']
             ];
             
-            // Get detailed info for each movie to build profile
-            foreach ($movies as $key => $movie) {
-                if (!isset($movie['id'])) continue;
-                
-                $detailUrl = TMDB_BASE_URL . '/movie/' . $movie['id'] . '?append_to_response=credits';
-                $detailResponse = file_get_contents($detailUrl, false, $context);
-                
-                if ($detailResponse !== false) {
-                    $details = json_decode($detailResponse, true);
-                    
-                    // Collect genres
-                    if (isset($details['genres'])) {
-                        foreach ($details['genres'] as $genre) {
-                            $preferenceProfile['genres'][$genre['id']] = ($preferenceProfile['genres'][$genre['id']] ?? 0) + 1;
-                        }
-                    }
-                    
-                    $preferenceProfile['vote_averages'][] = $details['vote_average'];
-                }
-            }
+            // Initialize recommendation engine
+            $recommendationEngine = new RecommendationEngine($sessionManager);
             
-            $recommendations = [];
+            // Generate recommendations using the new engine
+            $allRecommendations = $recommendationEngine->generateRecommendations($userMovies, 15);
             
-            // Use only genre-based recommendation (Tier 2)
-            if (!empty($preferenceProfile['genres'])) {
-                arsort($preferenceProfile['genres']);
-                $topGenres = array_slice(array_keys($preferenceProfile['genres']), 0, 2);
-                
-                $discoverUrl = TMDB_BASE_URL . '/discover/movie?' . http_build_query([
-                    'with_genres' => implode('|', $topGenres),
-                    'vote_average.gte' => 7.0,
-                    'vote_count.gte' => 1000,
-                    'sort_by' => 'vote_average.desc',
-                    'page' => 1
-                ]);
-                
-                $discoverResponse = file_get_contents($discoverUrl, false, $context);
-                if ($discoverResponse !== false) {
-                    $discoverData = json_decode($discoverResponse, true);
-                    
-                    foreach ($discoverData['results'] ?? [] as $movie) {
-                        if (!in_array($movie['id'], array_column($movies, 'id'))) {
-                            $recommendations[] = $movie;
-                            if (count($recommendations) >= 3) break; // Get 3 movies
-                        }
-                    }
-                }
-            }
-            
-            // If we don't have enough genre-based recommendations, get more from page 2
-            if (count($recommendations) < 3 && !empty($preferenceProfile['genres'])) {
-                $discoverUrl = TMDB_BASE_URL . '/discover/movie?' . http_build_query([
-                    'with_genres' => implode('|', $topGenres),
-                    'vote_average.gte' => 7.0,
-                    'vote_count.gte' => 1000,
-                    'sort_by' => 'vote_average.desc',
-                    'page' => 2
-                ]);
-                
-                $discoverResponse = file_get_contents($discoverUrl, false, $context);
-                if ($discoverResponse !== false) {
-                    $discoverData = json_decode($discoverResponse, true);
-                    
-                    foreach ($discoverData['results'] ?? [] as $movie) {
-                        if (!in_array($movie['id'], array_column($movies, 'id')) && 
-                            !in_array($movie['id'], array_column($recommendations, 'id'))) {
-                            $recommendations[] = $movie;
-                            if (count($recommendations) >= 3) break;
-                        }
-                    }
-                }
-            }
-            
-            if (!empty($recommendations)) {
+            if (!empty($allRecommendations)) {
                 // Separate main recommendation and alternatives
-                $mainRecommendation = array_shift($recommendations);
-                $alternatives = array_slice($recommendations, 0, 2);
+                $mainRecommendation = array_shift($allRecommendations);
+                $alternatives = array_slice($allRecommendations, 0, 10); // More alternatives
+                
+                // Store recommendations in session
+                $sessionManager->setCurrentRecommendations($allRecommendations);
+                $sessionManager->addToRecommendationQueue($alternatives);
+                
+                // Add to recommendation history
+                $sessionManager->addToRecommendationHistory($mainRecommendation);
                 
                 echo json_encode([
                     'success' => true,
                     'recommendation' => $mainRecommendation,
-                    'alternatives' => $alternatives
+                    'alternatives' => $alternatives,
+                    'total_available' => count($allRecommendations)
                 ]);
                 exit;
             } else {
@@ -259,6 +206,121 @@ switch ($_GET['action']) {
         }
         
         break;
+        
+    case 'like_movie':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $movieData = json_decode(urldecode($_POST['movie']), true);
+        if (!$movieData || !isset($movieData['id'])) {
+            echo json_encode(['error' => 'Invalid movie data']);
+            exit;
+        }
+        
+        $sessionManager->addLikedMovie($movieData);
+        $sessionManager->removeFromQueue($movieData['id']);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Movie added to favorites',
+            'stats' => $sessionManager->getSessionStats()
+        ]);
+        exit;
+        
+    case 'dislike_movie':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $movieData = json_decode(urldecode($_POST['movie']), true);
+        if (!$movieData || !isset($movieData['id'])) {
+            echo json_encode(['error' => 'Invalid movie data']);
+            exit;
+        }
+        
+        $sessionManager->addDislikedMovie($movieData);
+        $sessionManager->removeFromQueue($movieData['id']);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Movie marked as disliked',
+            'stats' => $sessionManager->getSessionStats()
+        ]);
+        exit;
+        
+    case 'get_liked_movies':
+        $likedMovies = $sessionManager->getLikedMovies();
+        echo json_encode([
+            'success' => true,
+            'movies' => $likedMovies,
+            'count' => count($likedMovies)
+        ]);
+        exit;
+        
+    case 'clear_liked_movies':
+        $sessionManager->clearLikedMovies();
+        echo json_encode([
+            'success' => true,
+            'message' => 'Liked movies cleared'
+        ]);
+        exit;
+        
+    case 'remove_liked_movie':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $movieId = $_POST['movie_id'] ?? null;
+        if ($movieId) {
+            $sessionManager->removeLikedMovie($movieId);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Movie removed from liked movies'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Movie ID required']);
+        }
+        exit;
+        
+    case 'get_more_movies':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $currentCount = intval($_POST['current_count'] ?? 0);
+        
+        try {
+            $recommendationEngine = new RecommendationEngine($sessionManager);
+            $newMovies = $recommendationEngine->getMoreRecommendations($currentCount, 5);
+            
+            if (!empty($newMovies)) {
+                $sessionManager->addToRecommendationQueue($newMovies);
+                
+                echo json_encode([
+                    'success' => true,
+                    'new_movies' => $newMovies,
+                    'total_available' => count($sessionManager->getRecommendationQueue())
+                ]);
+            } else {
+                echo json_encode(['error' => 'No more recommendations available']);
+            }
+        } catch (Exception $e) {
+            error_log("Error getting more movies: " . $e->getMessage());
+            echo json_encode(['error' => 'Failed to get more movies']);
+        }
+        exit;
+        
+    case 'get_session_stats':
+        echo json_encode([
+            'success' => true,
+            'stats' => $sessionManager->getSessionStats()
+        ]);
+        exit;
         
     default:
         error_log("Invalid action: " . $_GET['action']);

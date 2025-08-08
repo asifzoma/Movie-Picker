@@ -9,19 +9,33 @@ const selectedMovies = {
 
 // Movie search function with debounce
 function searchMovies(query, dropdownId) {
-    console.log('Searching for:', query);
+    console.log('🔍 SearchMovies called with:', query, 'dropdownId:', dropdownId);
     console.log('Using image base URL:', IMAGE_BASE_URL);
-    
-    if (query.length < 2) {
-        document.getElementById(`${dropdownId}-dropdown`).classList.add('hidden');
-        return;
-    }
     
     const dropdown = document.getElementById(`${dropdownId}-dropdown`);
     
+    // If dropdown doesn't exist, create a temporary one for debugging
+    if (!dropdown) {
+        console.warn(`Dropdown ${dropdownId}-dropdown not found, creating temporary one`);
+        const tempDropdown = document.createElement('div');
+        tempDropdown.id = `${dropdownId}-dropdown`;
+        tempDropdown.className = 'absolute left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg search-dropdown';
+        document.body.appendChild(tempDropdown);
+    }
+    
+    if (query.length < 2) {
+        const dropdownElement = document.getElementById(`${dropdownId}-dropdown`);
+        if (dropdownElement) {
+            dropdownElement.classList.add('hidden');
+        }
+        return;
+    }
+    
+    const dropdownElement = document.getElementById(`${dropdownId}-dropdown`);
+    
     // Show loading state
-    dropdown.innerHTML = '<div class="p-3 text-gray-400">Searching...</div>';
-    dropdown.classList.remove('hidden');
+    dropdownElement.innerHTML = '<div class="p-3 text-gray-400">Searching...</div>';
+    dropdownElement.classList.remove('hidden');
     
     fetch(`api.php?action=search&query=${encodeURIComponent(query)}`)
         .then(response => {
@@ -45,7 +59,7 @@ function searchMovies(query, dropdownId) {
                 throw new Error(data.error);
             }
             
-            dropdown.innerHTML = '';
+            dropdownElement.innerHTML = '';
             
             if (data.results && data.results.length > 0) {
                 data.results.slice(0, 5).forEach(movie => {
@@ -101,32 +115,34 @@ function searchMovies(query, dropdownId) {
                             poster_path: movie.poster_path
                         };
                         console.log('Selected movie:', selectedMovies[dropdownId]);
-                        dropdown.classList.add('hidden');
+                        dropdownElement.classList.add('hidden');
                     });
                     
-                    dropdown.appendChild(item);
+                    dropdownElement.appendChild(item);
                 });
-                dropdown.classList.remove('hidden');
+                dropdownElement.classList.remove('hidden');
             } else {
                 const item = document.createElement('div');
                 item.className = 'p-3 text-gray-400';
                 item.textContent = 'No movies found';
-                dropdown.appendChild(item);
-                dropdown.classList.remove('hidden');
+                dropdownElement.appendChild(item);
+                dropdownElement.classList.remove('hidden');
             }
         })
         .catch(error => {
             console.error('Error searching movies:', error);
-            dropdown.innerHTML = `<div class="p-3 text-red-400">Error: ${error.message}</div>`;
-            dropdown.classList.remove('hidden');
+            dropdownElement.innerHTML = `<div class="p-3 text-red-400">Error: ${error.message}</div>`;
+            dropdownElement.classList.remove('hidden');
         });
 }
 
 // Set up search functionality for each input
 function setupSearch(inputElement, dropdownId) {
+    console.log('🔧 Setting up search for:', dropdownId, 'input element:', inputElement);
     let timeout;
     
     inputElement.addEventListener('input', () => {
+        console.log('📝 Input event triggered for:', dropdownId, 'value:', inputElement.value);
         clearTimeout(timeout);
         const query = inputElement.value.trim();
         if (selectedMovies[dropdownId] && selectedMovies[dropdownId].title !== query) {
@@ -141,7 +157,10 @@ function setupSearch(inputElement, dropdownId) {
     
     inputElement.addEventListener('blur', () => {
         setTimeout(() => {
-            document.getElementById(`${dropdownId}-dropdown`).classList.add('hidden');
+            const dropdownElement = document.getElementById(`${dropdownId}-dropdown`);
+            if (dropdownElement) {
+                dropdownElement.classList.add('hidden');
+            }
         }, 200);
     });
     

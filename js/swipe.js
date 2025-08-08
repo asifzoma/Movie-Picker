@@ -7,13 +7,9 @@ export class MovieSwiper {
         this.savedMoviesContainer = document.getElementById('saved-movies-container');
         this.savedMovies = new Set();
         
-        // Mobile swipe buttons
-        this.leftButton = document.getElementById('swipe-left');
-        this.rightButton = document.getElementById('swipe-right');
-        
-        // Desktop action buttons
-        this.desktopDislikeButton = document.getElementById('desktop-dislike');
-        this.desktopLikeButton = document.getElementById('desktop-like');
+        // Desktop action buttons (these exist in the HTML)
+        this.desktopDislikeButton = document.getElementById('dislike-btn');
+        this.desktopLikeButton = document.getElementById('like-btn');
         
         // Touch handling variables
         this.isDragging = false;
@@ -43,9 +39,7 @@ export class MovieSwiper {
             document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
             document.addEventListener('mouseup', () => this.handleMouseUp());
             
-            // Mobile swipe buttons
-            this.leftButton.addEventListener('click', () => this.swipeLeft());
-            this.rightButton.addEventListener('click', () => this.swipeRight());
+            // Mobile swipe functionality is handled by touch events
         }
         
         // Listen for window resize to update mobile state
@@ -195,7 +189,20 @@ export class MovieSwiper {
     }
 }
 
+// Global swiper instance
+let globalSwiper = null;
+
+// Global function to show next movie (for compatibility with app.js)
+function showNextMovie() {
+    if (globalSwiper) {
+        globalSwiper.showNextMovie();
+    }
+}
+
 // Initialize the swiper when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    const swiper = new MovieSwiper();
-}); 
+    globalSwiper = new MovieSwiper();
+});
+
+// Export the global function
+export { showNextMovie }; 

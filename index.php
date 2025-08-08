@@ -72,6 +72,215 @@
             background-clip: text;
             color: transparent;
         }
+        
+        .saved-movies-container {
+            scrollbar-width: thin;
+            scrollbar-color: #4c1d95 #1f2937;
+        }
+        
+        .saved-movies-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .saved-movies-container::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+        
+        .saved-movies-container::-webkit-scrollbar-thumb {
+            background: #4c1d95;
+            border-radius: 3px;
+        }
+        
+        .saved-movies-container::-webkit-scrollbar-thumb:hover {
+            background: #5b21b6;
+        }
+        
+        .saved-movie-card {
+            transition: all 0.2s ease;
+        }
+        
+        .saved-movie-card:hover {
+            transform: translateX(2px);
+            background-color: #374151;
+        }
+        
+        /* Horizontal slider for saved movies */
+        .saved-movies-slider-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .saved-movies-slider {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 0.5rem 0;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .saved-movies-slider::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .saved-movie-card {
+            flex: 0 0 auto;
+            width: 150px;
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 0.75rem;
+            position: relative;
+            transition: all 0.2s ease;
+            border: 1px solid #374151;
+        }
+        
+        .saved-movie-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border-color: #8b5cf6;
+        }
+        
+        .saved-movie-poster {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .saved-movie-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .saved-movie-year {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        
+        .saved-movie-delete {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+        
+        .saved-movie-card:hover .saved-movie-delete {
+            opacity: 1;
+        }
+        
+        .saved-movie-delete:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+        
+        .scroll-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(139, 92, 246, 0.8);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .scroll-btn:hover {
+            background: rgba(139, 92, 246, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .scroll-left {
+            left: 0.5rem;
+        }
+        
+        .scroll-right {
+            right: 0.5rem;
+        }
+        
+        /* Enhanced like/dislike buttons - more prominent */
+        .action-btn {
+            width: 80px !important;
+            height: 80px !important;
+            font-size: 32px !important;
+            border-radius: 50% !important;
+            border: 3px solid transparent !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.15) !important;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        .action-btn.dislike {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            color: white !important;
+            border-color: #dc2626 !important;
+        }
+        
+        .action-btn.dislike:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+            border-color: #b91c1c !important;
+        }
+        
+        .action-btn.like {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: white !important;
+            border-color: #059669 !important;
+        }
+        
+        .action-btn.like:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            border-color: #047857 !important;
+        }
+        
+        /* Reduced poster height with full poster display */
+        #movie-poster {
+            max-height: 225px !important; /* Half of original 450px */
+            object-fit: contain !important; /* Show full poster instead of cropping */
+            width: 100% !important;
+            background-color: #1a1a1a !important; /* Dark background for letterboxing */
+        }
+        
+        #poster-container {
+            max-height: 225px !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -88,6 +297,17 @@
         </div>
         
         <div class="container mx-auto px-4 py-12 relative z-10">
+            <!-- Age Warning -->
+            <div class="bg-red-900 bg-opacity-90 border border-red-700 rounded-lg p-4 mb-8 text-center">
+                <div class="flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-xl mr-3"></i>
+                    <p class="text-red-100 font-semibold">
+                        <strong>⚠️ Age Warning:</strong> This site is intended for users 18 years and older. 
+                        Some movie content may contain mature themes and content.
+                    </p>
+                </div>
+            </div>
+            
             <!-- Header -->
             <header class="text-center mb-16">
                 <h1 class="bebas text-6xl md:text-8xl mb-2 tracking-wider gradient-text">Momo Movies</h1>
@@ -198,10 +418,28 @@
                     <div id="movie-stack" class="hidden"></div>
                     
                     <!-- Saved movies tray -->
-                    <div class="saved-movies">
-                        <h3 class="text-xl font-bold mb-4 text-purple-400">Saved Movies</h3>
-                        <div id="saved-movies-container" class="saved-movies-container">
-                            <!-- Saved movies will be added here -->
+                    <div class="saved-movies mt-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-purple-400">Your Liked Movies</h3>
+                            <button onclick="clearAllLikedMovies()" class="text-red-400 hover:text-red-300 text-sm">
+                                <i class="fas fa-trash mr-1"></i> Clear All
+                            </button>
+                        </div>
+                        <div class="saved-movies-slider-container">
+                            <div id="saved-movies-container" class="saved-movies-slider">
+                                <!-- Saved movies will be added here -->
+                            </div>
+                            <button id="scroll-left" class="scroll-btn scroll-left">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="scroll-right" class="scroll-btn scroll-right">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button onclick="loadMoreMovies()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
+                                <i class="fas fa-plus mr-2"></i> Load More Movies
+                            </button>
                         </div>
                     </div>
                 </div>

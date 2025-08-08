@@ -1,13 +1,10 @@
 // API Configuration
-let IMAGE_BASE_URL;
+let IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // Default fallback URL
 
 // Function to initialize configuration
 function initConfig() {
     const metaTag = document.querySelector('meta[name="tmdb-image-base-url"]');
-    if (!metaTag) {
-        console.error('TMDB image base URL meta tag not found');
-        IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'; // Fallback URL
-    } else {
+    if (metaTag) {
         IMAGE_BASE_URL = metaTag.content;
     }
     console.log('Initialized IMAGE_BASE_URL:', IMAGE_BASE_URL);
@@ -21,7 +18,7 @@ const elements = {
     loadingSection: document.getElementById('loading-section'),
     errorSection: document.getElementById('error-section'),
     tryAgainBtn: document.getElementById('try-again'),
-    errorRetryBtn: document.getElementById('error-retry'),
+    errorRetryBtn: document.querySelector('#error-section button'),
     
     // Search inputs and dropdowns
     childhoodInput: document.getElementById('childhood'),

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="tmdb-image-base-url" content="https://image.tmdb.org/t/p/w500">
+    <title>Debug - Momo Movies</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            padding: 20px;
+        }
+        .debug-section {
+            background: #1a1a1a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .error {
+            color: #ff4444;
+        }
+        .success {
+            color: #44ff44;
+        }
+        input {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 4px;
+            width: 300px;
+        }
+        button {
+            background: #4c1d95;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5b21b6;
+        }
+        #results {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Momo Movies Debug Page</h1>
+    
+    <div class="debug-section">
+        <h2>Search Test</h2>
+        <input type="text" id="searchInput" placeholder="Search for a movie...">
+        <button onclick="testSearch()">Search</button>
+        <div id="results"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Console Log</h2>
+        <div id="console"></div>
+    </div>
+
+    <script type="module">
+        // Test the imports
+        try {
+            const { elements, IMAGE_BASE_URL } = await import('./js/config.js');
+            console.log('✅ Config loaded successfully');
+            console.log('IMAGE_BASE_URL:', IMAGE_BASE_URL);
+            console.log('Elements:', elements);
+            
+            const { selectedMovies, setupSearch } = await import('./js/movieSearch.js');
+            console.log('✅ MovieSearch loaded successfully');
+            
+            const { displayRecommendation, showError, generateMovieCardContent } = await import('./js/recommendation.js');
+            console.log('✅ Recommendation loaded successfully');
+            
+            const { MovieSwiper, showNextMovie } = await import('./js/swipe.js');
+            console.log('✅ Swipe loaded successfully');
+            
+            logToConsole('✅ All modules loaded successfully', 'success');
+            
+            // Test search functionality
+            const searchInput = document.getElementById('searchInput');
+            setupSearch(searchInput, 'debug');
+            
+        } catch (error) {
+            console.error('❌ Error loading modules:', error);
+            logToConsole('❌ Error loading modules: ' + error.message, 'error');
+        }
+        
+        // Global function to test search
+        window.testSearch = async function() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('results');
+            
+            if (!query) {
+                resultsDiv.innerHTML = '<p class="error">Please enter a search query</p>';
+                return;
+            }
+            
+            try {
+                logToConsole('🔍 Searching for: ' + query);
+                
+                const response = await fetch(`api.php?action=search&query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                logToConsole(`✅ Found ${data.results?.length || 0} results`, 'success');
+                
+                if (data.results && data.results.length > 0) {
+                    resultsDiv.innerHTML = data.results.slice(0, 5).map(movie => `
+                        <div style="border: 1px solid #333; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                            <strong>${movie.title}</strong> (${movie.release_date ? movie.release_date.split('-')[0] : 'Unknown'})<br>
+                            <small>ID: ${movie.id} | Rating: ${movie.vote_average}/10</small>
+                        </div>
+                    `).join('');
+                } else {
+                    resultsDiv.innerHTML = '<p>No results found</p>';
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                logToConsole('❌ Search error: ' + error.message, 'error');
+                resultsDiv.innerHTML = '<p class="error">Error: ' + error.message + '</p>';
+            }
+        };
+        
+        function logToConsole(message, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            consoleDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        // Override console.log to also show in our debug console
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToConsole(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToConsole(args.join(' '), 'error');
+        };
+        
+        logToConsole('🚀 Debug page loaded');
+    </script>
+</body>
+</html>
