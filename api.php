@@ -307,7 +307,7 @@ switch ($_GET['action']) {
                     'total_available' => count($sessionManager->getRecommendationQueue())
                 ]);
             } else {
-                echo json_encode(['error' => 'No more recommendations available']);
+                echo json_encode(['success' => true, 'new_movies' => [], 'message' => 'No more recommendations available']);
             }
         } catch (Exception $e) {
             error_log("Error getting more movies: " . $e->getMessage());

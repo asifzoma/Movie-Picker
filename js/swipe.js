@@ -133,14 +133,86 @@ export class MovieSwiper {
     }
     
     swipeLeft() {
+        // Handle dislike - need to call the proper dislike function
+        this.handleDislike();
         this.currentCard.classList.add('swipe-left');
-        this.showNextMovie();
+        setTimeout(() => this.showNextMovie(), 300);
     }
     
     swipeRight() {
+        // Handle like - need to call the proper like function
+        this.handleLike();
         this.currentCard.classList.add('swipe-right');
-        this.saveCurrentMovie();
-        this.showNextMovie();
+        setTimeout(() => this.showNextMovie(), 300);
+    }
+    
+    // Get current movie data for API calls
+    getCurrentMovie() {
+        if (!this.currentCard) return null;
+        
+        const movieId = this.currentCard.dataset.movieId;
+        const title = this.currentCard.querySelector('#movie-title')?.textContent;
+        const posterPath = this.currentCard.querySelector('#movie-poster')?.src;
+        const releaseDate = this.currentCard.querySelector('#movie-year')?.textContent;
+        const voteAverage = parseFloat(this.currentCard.querySelector('#rating-value')?.textContent);
+        
+        return {
+            id: parseInt(movieId),
+            title: title,
+            poster_path: posterPath ? posterPath.replace('https://image.tmdb.org/t/p/w500', '') : null,
+            release_date: releaseDate ? `${releaseDate}-01-01` : null,
+            vote_average: voteAverage || null
+        };
+    }
+    
+    // Handle like functionality
+    async handleLike() {
+        const currentMovie = this.getCurrentMovie();
+        if (currentMovie) {
+            try {
+                // Send like to server
+                const response = await fetch('api.php?action=like_movie', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `movie=${encodeURIComponent(JSON.stringify(currentMovie))}`
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Update UI - save movie locally for display
+                    this.saveCurrentMovie();
+                    console.log('Movie liked successfully:', currentMovie.title);
+                }
+            } catch (error) {
+                console.error('Error liking movie:', error);
+            }
+        }
+    }
+    
+    // Handle dislike functionality
+    async handleDislike() {
+        const currentMovie = this.getCurrentMovie();
+        if (currentMovie) {
+            try {
+                // Send dislike to server
+                const response = await fetch('api.php?action=dislike_movie', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `movie=${encodeURIComponent(JSON.stringify(currentMovie))}`
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Movie disliked successfully:', currentMovie.title);
+                }
+            } catch (error) {
+                console.error('Error disliking movie:', error);
+            }
+        }
     }
     
     resetCard() {
@@ -153,18 +225,28 @@ export class MovieSwiper {
         
         this.savedMovies.add(movieId);
         
+        const currentMovie = this.getCurrentMovie();
+        const posterUrl = this.currentCard.querySelector('#movie-poster')?.src || 'https://via.placeholder.com/150x200/1a1a1a/ffffff?text=No+Poster';
+        
         const movieCard = document.createElement('div');
         movieCard.className = 'saved-movie-card';
         movieCard.innerHTML = `
-            <img src="${this.currentCard.querySelector('#movie-poster').src}" 
-                 alt="${this.currentCard.querySelector('#movie-title').textContent}">
-            <div class="movie-info">
-                <h4>${this.currentCard.querySelector('#movie-title').textContent}</h4>
-                <span class="year">${this.currentCard.querySelector('#movie-year').textContent}</span>
-            </div>
+            <button class="saved-movie-delete" onclick="removeLikedMovie(${movieId}, this)" title="Remove from liked movies">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="${posterUrl}" alt="${currentMovie.title}" class="saved-movie-poster">
+            <h4 class="saved-movie-title">${currentMovie.title}</h4>
+            <p class="saved-movie-year">${currentMovie.release_date ? currentMovie.release_date.substring(0, 4) : 'N/A'}</p>
         `;
         
-        this.savedMoviesContainer.appendChild(movieCard);
+        if (this.savedMoviesContainer) {
+            this.savedMoviesContainer.appendChild(movieCard);
+            
+            // Update slider controls if they exist
+            if (window.initializeSliderControls) {
+                window.initializeSliderControls();
+            }
+        }
     }
     
     showNextMovie() {
@@ -172,7 +254,9 @@ export class MovieSwiper {
         const nextMovie = this.movieStack.firstElementChild;
         if (!nextMovie) {
             // No more movies, trigger more movies load
-            document.getElementById('more-movies-btn')?.click();
+            if (window.loadMoreMovies) {
+                window.loadMoreMovies();
+            }
             return;
         }
         
@@ -186,6 +270,23 @@ export class MovieSwiper {
         // Reset the current card's state
         this.currentCard.classList.remove('swipe-left', 'swipe-right');
         this.currentCard.style.transform = '';
+        
+        // Reattach event listeners to the new buttons
+        this.reattachButtonListeners();
+    }
+    
+    reattachButtonListeners() {
+        // Remove old listeners and reattach to new buttons
+        this.desktopDislikeButton = document.getElementById('dislike-btn');
+        this.desktopLikeButton = document.getElementById('like-btn');
+        
+        if (this.desktopDislikeButton) {
+            this.desktopDislikeButton.addEventListener('click', () => this.swipeLeft());
+        }
+        
+        if (this.desktopLikeButton) {
+            this.desktopLikeButton.addEventListener('click', () => this.swipeRight());
+        }
     }
 }
 

@@ -228,6 +228,74 @@
             right: 0.5rem;
         }
         
+        /* New movie card layout with side buttons */
+        .movie-card-layout {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .action-side {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .left-side {
+            order: 1;
+        }
+        
+        .right-side {
+            order: 3;
+        }
+        
+        .movie-content {
+            order: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        /* Override old movie-actions styles */
+        .movie-actions {
+            display: none !important;
+        }
+        
+        /* Responsive design for mobile */
+        @media (max-width: 768px) {
+            .movie-card-layout {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .action-side {
+                order: unset;
+            }
+            
+            .left-side {
+                order: 1;
+            }
+            
+            .right-side {
+                order: 3;
+            }
+            
+            .movie-content {
+                order: 2;
+            }
+            
+            .action-btn {
+                width: 70px !important;
+                height: 70px !important;
+                font-size: 28px !important;
+            }
+        }
+        
         /* Enhanced like/dislike buttons - more prominent */
         .action-btn {
             width: 80px !important;
@@ -375,42 +443,49 @@
                     <!-- Swipe container for Tinder-like interface -->
                     <div class="swipe-container">
                         <div id="recommendation" class="swipe-card">
-                            <div class="flex flex-col gap-3">
-                                <div id="poster-container" class="w-full">
-                                    <img id="movie-poster" src="https://via.placeholder.com/300x450" alt="Recommended movie" class="w-full rounded-lg shadow-lg">
-                                    <p id="movie-rating" class="mt-3 flex items-center">
-                                        <i class="fas fa-star text-yellow-400 mr-2"></i>
-                                        <span id="rating-value" class="font-bold">-</span>/10
-                                        <span id="vote-count" class="text-gray-400 ml-2 text-sm">(0 votes)</span>
-                                    </p>
+                            <div class="movie-card-layout">
+                                <!-- Dislike button on the left -->
+                                <div class="action-side left-side">
+                                    <button class="action-btn dislike" id="dislike-btn" aria-label="Dislike movie">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
                                 
-                                <div>
-                                    <h3 id="movie-title" class="bebas text-xl mb-1">Movie Title</h3>
-                                    <p id="movie-year" class="text-sm text-gray-300 mb-2">Year</p>
-                                    
-                                    <div class="mb-3">
-                                        <h4 class="text-base font-bold mb-1 text-pink-400">Synopsis</h4>
-                                        <p id="movie-overview" class="text-xs text-gray-300 leading-relaxed line-clamp-3"></p>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <p id="explanation" class="text-xs text-purple-400 italic leading-relaxed">
-                                            Your unique cinematic journey led us to this recommendation.
+                                <!-- Movie content in the center -->
+                                <div class="movie-content">
+                                    <div id="poster-container" class="w-full">
+                                        <img id="movie-poster" src="https://via.placeholder.com/300x450" alt="Recommended movie" class="w-full rounded-lg shadow-lg">
+                                        <p id="movie-rating" class="mt-3 flex items-center">
+                                            <i class="fas fa-star text-yellow-400 mr-2"></i>
+                                            <span id="rating-value" class="font-bold">-</span>/10
+                                            <span id="vote-count" class="text-gray-400 ml-2 text-sm">(0 votes)</span>
                                         </p>
                                     </div>
+                                    
+                                    <div>
+                                        <h3 id="movie-title" class="bebas text-xl mb-1">Movie Title</h3>
+                                        <p id="movie-year" class="text-sm text-gray-300 mb-2">Year</p>
+                                        
+                                        <div class="mb-3">
+                                            <h4 class="text-base font-bold mb-1 text-pink-400">Synopsis</h4>
+                                            <p id="movie-overview" class="text-xs text-gray-300 leading-relaxed line-clamp-3"></p>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p id="explanation" class="text-xs text-purple-400 italic leading-relaxed">
+                                                Your unique cinematic journey led us to this recommendation.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Like button on the right -->
+                                <div class="action-side right-side">
+                                    <button class="action-btn like" id="like-btn" aria-label="Like movie">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Movie action buttons -->
-                        <div class="movie-actions">
-                            <button class="action-btn dislike" id="dislike-btn" aria-label="Dislike movie">
-                                <i class="fas fa-times"></i>
-                            </button>
-                            <button class="action-btn like" id="like-btn" aria-label="Like movie">
-                                <i class="fas fa-heart"></i>
-                            </button>
                         </div>
                     </div>
 
@@ -461,7 +536,7 @@
                 </div>
                 
                 <!-- Error section -->
-                <div id="error-section" class="hidden mt-12 text-center py-20">
+                <div id="error-section" class="hidden mt-12 text-center py-20" style="display: none !important;">
                     <div class="space-y-4">
                         <div class="flex justify-center">
                             <i class="fas fa-exclamation-circle text-6xl text-red-500"></i>

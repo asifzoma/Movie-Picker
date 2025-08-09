@@ -71,31 +71,48 @@ function generateMovieCardContent(movie) {
         'https://via.placeholder.com/300x450/1a1a1a/ffffff?text=No+Poster';
     
     return `
-        <div class="flex flex-col gap-3">
-            <div id="poster-container" class="w-full">
-                <img id="movie-poster" src="${posterUrl}" 
-                     alt="${movie.title}" class="w-full rounded-lg shadow-lg">
-                <p id="movie-rating" class="mt-3 flex items-center">
-                    <i class="fas fa-star text-yellow-400 mr-2"></i>
-                    <span id="rating-value" class="font-bold">${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</span>/10
-                    <span id="vote-count" class="text-gray-400 ml-2 text-sm">(${movie.vote_count ? movie.vote_count.toLocaleString() : 0} votes)</span>
-                </p>
+        <div class="movie-card-layout">
+            <!-- Dislike button on the left -->
+            <div class="action-side left-side">
+                <button class="action-btn dislike" id="dislike-btn" aria-label="Dislike movie">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <div>
-                <h3 id="movie-title" class="bebas text-xl mb-1">${movie.title}</h3>
-                <p id="movie-year" class="text-sm text-gray-300 mb-2">${movie.release_date ? movie.release_date.split('-')[0] : 'Unknown year'}</p>
-                
-                <div class="mb-3">
-                    <h4 class="text-base font-bold mb-1 text-pink-400">Synopsis</h4>
-                    <p id="movie-overview" class="text-xs text-gray-300 leading-relaxed line-clamp-3">${movie.overview || 'No synopsis available.'}</p>
-                </div>
-
-                <div class="mb-3">
-                    <p id="explanation" class="text-xs text-purple-400 italic leading-relaxed">
-                        Your unique cinematic journey led us to this recommendation.
+            <!-- Movie content in the center -->
+            <div class="movie-content">
+                <div id="poster-container" class="w-full">
+                    <img id="movie-poster" src="${posterUrl}" 
+                         alt="${movie.title}" class="w-full rounded-lg shadow-lg">
+                    <p id="movie-rating" class="mt-3 flex items-center">
+                        <i class="fas fa-star text-yellow-400 mr-2"></i>
+                        <span id="rating-value" class="font-bold">${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</span>/10
+                        <span id="vote-count" class="text-gray-400 ml-2 text-sm">(${movie.vote_count ? movie.vote_count.toLocaleString() : 0} votes)</span>
                     </p>
                 </div>
+                
+                <div>
+                    <h3 id="movie-title" class="bebas text-xl mb-1">${movie.title}</h3>
+                    <p id="movie-year" class="text-sm text-gray-300 mb-2">${movie.release_date ? movie.release_date.split('-')[0] : 'Unknown year'}</p>
+                    
+                    <div class="mb-3">
+                        <h4 class="text-base font-bold mb-1 text-pink-400">Synopsis</h4>
+                        <p id="movie-overview" class="text-xs text-gray-300 leading-relaxed line-clamp-3">${movie.overview || 'No synopsis available.'}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <p id="explanation" class="text-xs text-purple-400 italic leading-relaxed">
+                            Your unique cinematic journey led us to this recommendation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Like button on the right -->
+            <div class="action-side right-side">
+                <button class="action-btn like" id="like-btn" aria-label="Like movie">
+                    <i class="fas fa-heart"></i>
+                </button>
             </div>
         </div>
     `;
@@ -180,4 +197,7 @@ function showError(message) {
     elements.errorSection.classList.remove('hidden');
 }
 
-export { displayRecommendation, showError, generateMovieCardContent }; 
+// Make loadMoreMovies available globally for onclick handlers
+window.loadMoreMovies = loadMoreMovies;
+
+export { displayRecommendation, showError, generateMovieCardContent, loadMoreMovies }; 
