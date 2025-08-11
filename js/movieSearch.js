@@ -115,6 +115,13 @@ function searchMovies(query, dropdownId) {
                             poster_path: movie.poster_path
                         };
                         console.log('Selected movie:', selectedMovies[dropdownId]);
+                        
+                        // Display the selected movie using the new function
+                        if (typeof displaySelectedMovie === 'function') {
+                            displaySelectedMovie(dropdownId, selectedMovies[dropdownId]);
+                        }
+                        
+                        // Hide the dropdown
                         dropdownElement.classList.add('hidden');
                     });
                     
@@ -147,9 +154,10 @@ function setupSearch(inputElement, dropdownId) {
         const query = inputElement.value.trim();
         if (selectedMovies[dropdownId] && selectedMovies[dropdownId].title !== query) {
             selectedMovies[dropdownId] = null;
-            const selectedDisplay = inputElement.parentElement.querySelector('.selected-movie');
-            if (selectedDisplay) {
-                selectedDisplay.remove();
+            // Hide the remove button (X) using the new system
+            const removeBtn = document.getElementById(`${dropdownId}-remove`);
+            if (removeBtn) {
+                removeBtn.classList.add('hidden');
             }
         }
         timeout = setTimeout(() => searchMovies(query, dropdownId), 300);

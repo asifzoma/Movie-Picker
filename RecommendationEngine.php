@@ -27,6 +27,13 @@ class RecommendationEngine {
     }
     
     public function generateRecommendations($userMovies, $count = 10) {
+        // First, handle any duplicates in user input
+        $duplicateAnalysis = $this->detectAndHandleDuplicates($userMovies);
+        if ($duplicateAnalysis['duplicate_count'] > 0) {
+            error_log("Found " . $duplicateAnalysis['duplicate_count'] . " duplicate movies in user input");
+            $userMovies = $duplicateAnalysis['unique_movies'];
+        }
+        
         // Build comprehensive user profile
         $userProfile = $this->buildUserProfile($userMovies);
         
@@ -51,7 +58,7 @@ class RecommendationEngine {
         $directorMatches = $this->getDirectorMatches($mergedProfile, $count / 3);
         $recommendations = array_merge($recommendations, $directorMatches);
         
-        // Remove duplicates and filter out already seen movies
+        // Remove duplicates and filter out already seen movies and franchises
         $recommendations = $this->filterRecommendations($recommendations);
         
         // Sort by relevance score
@@ -331,10 +338,16 @@ class RecommendationEngine {
             array_column($dislikedMovies, 'id')
         );
         
+        // Get franchise information for input movies to avoid franchise repetition
+        $inputFranchises = $this->getInputMovieFranchises();
+        
         foreach ($recommendations as $movie) {
             if (!in_array($movie['id'], $excludeIds) && !in_array($movie['id'], $seenIds)) {
-                $filtered[] = $movie;
-                $seenIds[] = $movie['id'];
+                // Check if movie is from the same franchise as input movies
+                if (!$this->isSameFranchise($movie, $inputFranchises)) {
+                    $filtered[] = $movie;
+                    $seenIds[] = $movie['id'];
+                }
             }
         }
         
@@ -384,5 +397,238 @@ class RecommendationEngine {
         }
         
         return $this->filterRecommendations($recommendations);
+    }
+    
+    /**
+     * Get franchise information for input movies to avoid franchise repetition
+     */
+    private function getInputMovieFranchises() {
+        $franchises = [];
+        $userMovies = $this->sessionManager->getLikedMovies();
+        
+        foreach ($userMovies as $movie) {
+            if (isset($movie['id'])) {
+                $details = $this->getMovieDetails($movie['id']);
+                if ($details && isset($details['belongs_to_collection'])) {
+                    $collection = $details['belongs_to_collection'];
+                    $franchises[$collection['id']] = [
+                        'name' => $collection['name'],
+                        'id' => $collection['id']
+                    ];
+                }
+            }
+        }
+        
+        return $franchises;
+    }
+    
+    /**
+     * Check if a movie belongs to the same franchise as input movies
+     */
+    private function isSameFranchise($movie, $inputFranchises) {
+        if (empty($inputFranchises)) {
+            return false;
+        }
+        
+        // Get movie details to check franchise
+        $details = $this->getMovieDetails($movie['id']);
+        if (!$details || !isset($details['belongs_to_collection'])) {
+            return false;
+        }
+        
+        $movieCollection = $details['belongs_to_collection'];
+        
+        // Check if this movie belongs to any of the input franchises
+        foreach ($inputFranchises as $franchise) {
+            if ($franchise['id'] === $movieCollection['id']) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Detect and handle duplicate movie inputs intelligently
+     */
+    public function detectAndHandleDuplicates($userMovies) {
+        $duplicates = [];
+        $uniqueMovies = [];
+        $seenTitles = [];
+        $seenIds = [];
+        
+        foreach ($userMovies as $movie) {
+            $title = strtolower(trim($movie['title'] ?? ''));
+            $id = $movie['id'] ?? null;
+            
+            // Check for exact ID duplicates
+            if ($id && in_array($id, $seenIds)) {
+                $duplicates[] = [
+                    'type' => 'exact_duplicate',
+                    'movie' => $movie,
+                    'reason' => 'Same movie ID already provided'
+                ];
+                continue;
+            }
+            
+            // Check for title duplicates (with fuzzy matching)
+            $isDuplicate = false;
+            foreach ($seenTitles as $seenTitle) {
+                if ($this->isSimilarTitle($title, $seenTitle)) {
+                    $duplicates[] = [
+                        'type' => 'title_duplicate',
+                        'movie' => $movie,
+                        'reason' => 'Similar title already provided: ' . $seenTitle
+                    ];
+                    $isDuplicate = true;
+                    break;
+                }
+            }
+            
+            if (!$isDuplicate) {
+                $uniqueMovies[] = $movie;
+                $seenTitles[] = $title;
+                if ($id) $seenIds[] = $id;
+            }
+        }
+        
+        return [
+            'unique_movies' => $uniqueMovies,
+            'duplicates' => $duplicates,
+            'duplicate_count' => count($duplicates)
+        ];
+    }
+    
+    /**
+     * Fuzzy title matching to detect similar movies
+     */
+    private function isSimilarTitle($title1, $title2) {
+        // Remove common suffixes and prefixes
+        $clean1 = $this->cleanTitle($title1);
+        $clean2 = $this->cleanTitle($title2);
+        
+        // Exact match after cleaning
+        if ($clean1 === $clean2) {
+            return true;
+        }
+        
+        // Check for franchise patterns (e.g., "Star Wars: Episode IV" vs "Star Wars: Episode V")
+        if ($this->isFranchisePattern($clean1, $clean2)) {
+            return true;
+        }
+        
+        // Calculate similarity using Levenshtein distance
+        $similarity = 1 - (levenshtein($clean1, $clean2) / max(strlen($clean1), strlen($clean2)));
+        
+        return $similarity > 0.8; // 80% similarity threshold
+    }
+    
+    /**
+     * Clean movie title for comparison
+     */
+    private function cleanTitle($title) {
+        // Remove common suffixes
+        $suffixes = ['(film)', '(movie)', '(2019)', '(2020)', '(2021)', '(2022)', '(2023)', '(2024)'];
+        $title = str_replace($suffixes, '', $title);
+        
+        // Remove year patterns
+        $title = preg_replace('/\s*\(\d{4}\)\s*/', '', $title);
+        
+        // Remove special characters and extra spaces
+        $title = preg_replace('/[^\w\s]/', '', $title);
+        $title = preg_replace('/\s+/', ' ', $title);
+        
+        return trim(strtolower($title));
+    }
+    
+    /**
+     * Check if titles follow franchise naming patterns
+     */
+    private function isFranchisePattern($title1, $title2) {
+        // Common franchise patterns
+        $patterns = [
+            '/^(.*?)\s*:\s*episode\s*[ivxlcdm]+$/i',
+            '/^(.*?)\s*part\s*[ivxlcdm]+$/i',
+            '/^(.*?)\s*#\s*\d+$/i',
+            '/^(.*?)\s*vol\.\s*\d+$/i'
+        ];
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $title1) && preg_match($pattern, $title2)) {
+                $base1 = preg_replace($pattern, '$1', $title1);
+                $base2 = preg_replace($pattern, '$1', $title2);
+                
+                if ($base1 === $base2) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Enhanced recommendation generation with duplicate handling
+     */
+    public function generateRecommendationsWithDuplicateHandling($userMovies, $count = 10) {
+        // First, detect and handle duplicates
+        $duplicateAnalysis = $this->detectAndHandleDuplicates($userMovies);
+        
+        if ($duplicateAnalysis['duplicate_count'] > 0) {
+            // Log duplicates for user awareness
+            error_log("Found " . $duplicateAnalysis['duplicate_count'] . " duplicate movies in user input");
+            
+            // Use only unique movies for recommendations
+            $userMovies = $duplicateAnalysis['unique_movies'];
+        }
+        
+        // Generate recommendations using unique movies
+        return $this->generateRecommendations($userMovies, $count);
+    }
+    
+    /**
+     * Get detailed analysis of user input for debugging and user feedback
+     */
+    public function analyzeUserInput($userMovies) {
+        $analysis = [
+            'total_inputs' => count($userMovies),
+            'duplicates' => $this->detectAndHandleDuplicates($userMovies),
+            'franchises' => $this->getInputMovieFranchises(),
+            'genres' => [],
+            'directors' => [],
+            'years' => []
+        ];
+        
+        // Analyze genres and directors
+        foreach ($userMovies as $movie) {
+            if (isset($movie['id'])) {
+                $details = $this->getMovieDetails($movie['id']);
+                if ($details) {
+                    // Collect genres
+                    if (isset($details['genres'])) {
+                        foreach ($details['genres'] as $genre) {
+                            $analysis['genres'][$genre['name']] = ($analysis['genres'][$genre['name']] ?? 0) + 1;
+                        }
+                    }
+                    
+                    // Collect directors
+                    if (isset($details['credits']['crew'])) {
+                        foreach ($details['credits']['crew'] as $crew) {
+                            if ($crew['job'] === 'Director') {
+                                $analysis['directors'][$crew['name']] = ($analysis['directors'][$crew['name']] ?? 0) + 1;
+                            }
+                        }
+                    }
+                    
+                    // Collect years
+                    if (isset($details['release_date'])) {
+                        $year = intval(substr($details['release_date'], 0, 4));
+                        $analysis['years'][$year] = ($analysis['years'][$year] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+        
+        return $analysis;
     }
 }

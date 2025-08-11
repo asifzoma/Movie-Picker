@@ -396,7 +396,12 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="childhood" placeholder="Search for a movie..." 
-                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-pink-500 focus:border-transparent pr-12">
+                                <!-- Remove button (X) in top-right corner -->
+                                <button type="button" id="childhood-remove" onclick="removeSelectedMovie('childhood')" 
+                                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-400 hover:text-red-300 transition-colors hidden">
+                                    <i class="fas fa-times-circle text-xl"></i>
+                                </button>
                                 <div id="childhood-dropdown" class="absolute left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg hidden search-dropdown"></div>
                             </div>
                         </div>
@@ -408,7 +413,12 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="recommend" placeholder="Search for a movie..."
-                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-12">
+                                <!-- Remove button (X) in top-right corner -->
+                                <button type="button" id="recommend-remove" onclick="removeSelectedMovie('recommend')" 
+                                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-400 hover:text-red-300 transition-colors hidden">
+                                    <i class="fas fa-times-circle text-xl"></i>
+                                </button>
                                 <div id="recommend-dropdown" class="absolute left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg hidden search-dropdown"></div>
                             </div>
                         </div>
@@ -420,7 +430,12 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="watched" placeholder="Search for a movie..."
-                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12">
+                                <!-- Remove button (X) in top-right corner -->
+                                <button type="button" id="watched-remove" onclick="removeSelectedMovie('watched')" 
+                                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-400 hover:text-red-300 transition-colors hidden">
+                                    <i class="fas fa-times-circle text-xl"></i>
+                                </button>
                                 <div id="watched-dropdown" class="absolute left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg hidden search-dropdown"></div>
                             </div>
                         </div>
@@ -512,8 +527,8 @@
                             </button>
                         </div>
                         <div class="mt-4 text-center">
-                            <button onclick="loadMoreMovies()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm">
-                                <i class="fas fa-plus mr-2"></i> Load More Movies
+                            <button onclick="shareLikedMovies()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-share-alt mr-2"></i> Share Movies
                             </button>
                         </div>
                     </div>
@@ -549,6 +564,64 @@
                     </div>
                 </div>
             </main>
+        </div>
+        
+        <!-- Share Modal -->
+        <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-gray-900 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-700">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-white">Share Your Movie Collection</h3>
+                        <button onclick="closeShareModal()" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Copy to Clipboard -->
+                        <button onclick="copyToClipboard()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fas fa-copy mr-3"></i>
+                            Copy to Clipboard
+                        </button>
+                        
+                        <!-- Email Share -->
+                        <button onclick="shareViaEmail()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fas fa-envelope mr-3"></i>
+                            Share via Email
+                        </button>
+                        
+                        <!-- Twitter Share -->
+                        <button onclick="shareViaTwitter()" class="w-full bg-blue-400 hover:bg-blue-500 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-twitter mr-3"></i>
+                            Share on Twitter
+                        </button>
+                        
+                        <!-- Facebook Share -->
+                        <button onclick="shareViaFacebook()" class="w-full bg-blue-800 hover:bg-blue-900 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-facebook mr-3"></i>
+                            Share on Facebook
+                        </button>
+                        
+                        <!-- WhatsApp Share -->
+                        <button onclick="shareViaWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors">
+                            <i class="fab fa-whatsapp mr-3"></i>
+                            Share on WhatsApp
+                        </button>
+                        
+                        <!-- Native Share (mobile) -->
+                        <button id="native-share-btn" onclick="shareNative()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg flex items-center justify-center transition-colors hidden">
+                            <i class="fas fa-mobile-alt mr-3"></i>
+                            Share
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-gray-700">
+                        <p class="text-sm text-gray-400 text-center">
+                            Share your personalized movie collection with friends and family!
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Footer -->

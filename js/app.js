@@ -60,16 +60,26 @@ elements.form.addEventListener('submit', async (e) => {
 
 // Try again button handlers
 elements.tryAgainBtn.addEventListener('click', () => {
-    elements.resultSection.classList.add('hidden');
-    elements.formSection.classList.remove('hidden');
-    // Clear form
-    elements.form.reset();
-    Object.keys(selectedMovies).forEach(key => selectedMovies[key] = null);
+    console.log('🔄 Try Again clicked - refreshing page for fresh start');
+    
+    // Clear session on server first (optional - for cleanup)
+    try {
+        fetch('api.php?action=clear_session', { method: 'POST' })
+            .then(() => console.log('✅ Server session cleared'))
+            .catch(err => console.log('⚠️ Could not clear server session:', err));
+    } catch (error) {
+        console.log('⚠️ Server session clear failed:', error);
+    }
+    
+    // Refresh the entire page for a completely fresh start
+    window.location.reload();
 });
 
 elements.errorRetryBtn.addEventListener('click', () => {
-    elements.errorSection.classList.add('hidden');
-    elements.formSection.classList.remove('hidden');
+    console.log('🔄 Error retry clicked - refreshing page for fresh start');
+    
+    // Refresh the entire page for a completely fresh start
+    window.location.reload();
 });
 
 // Event listeners for like/dislike buttons are now handled by swipe.js MovieSwiper class
@@ -77,6 +87,9 @@ elements.errorRetryBtn.addEventListener('click', () => {
 // Load liked movies on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadLikedMovies();
+    
+    // Update selected movie displays on page load
+    updateAllSelectedMovieDisplays();
 });
 
 // Touch swipe events are now handled by swipe.js MovieSwiper class
@@ -223,13 +236,302 @@ async function clearAllLikedMovies() {
 
 // getCurrentMovie function is now in swipe.js
 
+// ===== SHARING FUNCTIONALITY =====
+
+// Show share modal
+function shareLikedMovies() {
+    const modal = document.getElementById('share-modal');
+    modal.classList.remove('hidden');
+    
+    // Check if native sharing is supported
+    const nativeShareBtn = document.getElementById('native-share-btn');
+    if (navigator.share) {
+        nativeShareBtn.classList.remove('hidden');
+    } else {
+        nativeShareBtn.classList.add('hidden');
+    }
+    
+    // Add click outside to close
+    setTimeout(() => {
+        modal.addEventListener('click', handleModalClick);
+    }, 100);
+    
+    // Add ESC key to close
+    document.addEventListener('keydown', handleEscKey);
+}
+
+// Handle ESC key
+function handleEscKey(event) {
+    if (event.key === 'Escape') {
+        closeShareModal();
+    }
+}
+
+// Handle modal click outside
+function handleModalClick(event) {
+    const modal = document.getElementById('share-modal');
+    const modalContent = modal.querySelector('.bg-gray-900');
+    
+    if (event.target === modal) {
+        closeShareModal();
+    }
+}
+
+// Close share modal
+function closeShareModal() {
+    const modal = document.getElementById('share-modal');
+    modal.classList.add('hidden');
+    
+    // Remove click outside listener
+    modal.removeEventListener('click', handleModalClick);
+    
+    // Remove ESC key listener
+    document.removeEventListener('keydown', handleEscKey);
+}
+
+// Get liked movies data for sharing
+function getLikedMoviesData() {
+    const likedMovies = document.querySelectorAll('.saved-movie-card');
+    const movies = [];
+    
+    likedMovies.forEach(card => {
+        const title = card.querySelector('h4')?.textContent || 'Unknown Movie';
+        const year = card.querySelector('.year')?.textContent || '';
+        movies.push(`${title}${year ? ` (${year})` : ''}`);
+    });
+    
+    return movies;
+}
+
+// Copy to clipboard
+async function copyToClipboard() {
+    try {
+        const movies = getLikedMoviesData();
+        if (movies.length === 0) {
+            showNotification('No movies to share!', 'error');
+            return;
+        }
+        
+        const text = `🎬 My Movie Collection:\n\n${movies.join('\n')}\n\nShared from Momo Movies`;
+        
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+            showNotification('Copied to clipboard!', 'success');
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showNotification('Copied to clipboard!', 'success');
+        }
+    } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        showNotification('Failed to copy to clipboard', 'error');
+    }
+}
+
+// Share via Email
+function shareViaEmail() {
+    const movies = getLikedMoviesData();
+    if (movies.length === 0) {
+        showNotification('No movies to share!', 'error');
+        return;
+    }
+    
+    const subject = 'My Movie Collection from Momo Movies';
+    const body = `🎬 My Movie Collection:\n\n${movies.join('\n')}\n\nCheck out Momo Movies for personalized recommendations!`;
+    
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoLink);
+}
+
+// Share on Twitter
+function shareViaTwitter() {
+    const movies = getLikedMoviesData();
+    if (movies.length === 0) {
+        showNotification('No movies to share!', 'error');
+        return;
+    }
+    
+    const text = `🎬 My Movie Collection:\n${movies.slice(0, 3).join(', ')}${movies.length > 3 ? ' and more!' : ''}\n\nCheck out Momo Movies!`;
+    const url = window.location.href;
+    
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+}
+
+// Share on Facebook
+function shareViaFacebook() {
+    const url = window.location.href;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank');
+}
+
+// Share on WhatsApp
+function shareViaWhatsApp() {
+    const movies = getLikedMoviesData();
+    if (movies.length === 0) {
+        showNotification('No movies to share!', 'error');
+        return;
+    }
+    
+    const text = `🎬 My Movie Collection:\n${movies.slice(0, 3).join(', ')}${movies.length > 3 ? ' and more!' : ''}\n\nCheck out Momo Movies!`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// Native sharing (mobile devices)
+async function shareNative() {
+    try {
+        const movies = getLikedMoviesData();
+        if (movies.length === 0) {
+            showNotification('No movies to share!', 'error');
+            return;
+        }
+        
+        const shareData = {
+            title: 'My Movie Collection',
+            text: `🎬 My Movie Collection:\n${movies.slice(0, 3).join(', ')}${movies.length > 3 ? ' and more!' : ''}`,
+            url: window.location.href
+        };
+        
+        if (navigator.share) {
+            await navigator.share(shareData);
+        }
+    } catch (error) {
+        console.error('Error sharing:', error);
+        showNotification('Failed to share', 'error');
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium shadow-lg transition-all duration-300 transform translate-x-full`;
+    
+    // Set color based on type
+    switch (type) {
+        case 'success':
+            notification.classList.add('bg-green-600');
+            break;
+        case 'error':
+            notification.classList.add('bg-red-600');
+            break;
+        default:
+            notification.classList.add('bg-blue-600');
+    }
+    
+    notification.textContent = message;
+    
+    // Add to DOM
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
 // Helper function to save movie to UI (legacy function for compatibility)
 function saveMovie(movie) {
     // This is now handled by the server-side session management
     console.log('Movie saved:', movie.title);
 }
 
+// ===== SELECTED MOVIE MANAGEMENT =====
+
+/**
+ * Display a selected movie in the form
+ */
+function displaySelectedMovie(type, movie) {
+    const input = document.getElementById(type);
+    const removeBtn = document.getElementById(`${type}-remove`);
+    
+    if (input && removeBtn) {
+        // Update the input field with the movie title
+        input.value = movie.title;
+        
+        // Show the remove button (X)
+        removeBtn.classList.remove('hidden');
+        
+        console.log(`✅ Displayed selected movie for ${type}:`, movie.title);
+    }
+}
+
+/**
+ * Remove a selected movie from the form
+ */
+function removeSelectedMovie(type) {
+    console.log(`🗑️ removeSelectedMovie called for: ${type}`);
+    
+    const input = document.getElementById(type);
+    const removeBtn = document.getElementById(`${type}-remove`);
+    
+    console.log(`Input element:`, input);
+    console.log(`Remove button:`, removeBtn);
+    
+    if (input && removeBtn) {
+        // Hide the remove button (X)
+        removeBtn.classList.add('hidden');
+        console.log(`✅ Hidden remove button for ${type}`);
+        
+        // Clear the selectedMovies object
+        if (selectedMovies[type]) {
+            selectedMovies[type] = null;
+            console.log(`🗑️ Cleared selectedMovies[${type}]`);
+        }
+        
+        // Clear the input field
+        if (input) {
+            input.value = '';
+            input.focus();
+            console.log(`✅ Cleared input field for ${type}`);
+        }
+    } else {
+        console.error(`❌ Missing elements for ${type}:`, { input, removeBtn });
+    }
+}
+
+/**
+ * Update all selected movie displays based on current state
+ */
+function updateAllSelectedMovieDisplays() {
+    Object.keys(selectedMovies).forEach(type => {
+        const removeBtn = document.getElementById(`${type}-remove`);
+        if (selectedMovies[type] && removeBtn) {
+            // Show the remove button (X) if a movie is selected
+            removeBtn.classList.remove('hidden');
+        } else if (removeBtn) {
+            // Hide the remove button (X) if no movie is selected
+            removeBtn.classList.add('hidden');
+        }
+    });
+}
+
 // Make functions available globally for onclick handlers
 window.removeLikedMovie = removeLikedMovie;
 window.clearAllLikedMovies = clearAllLikedMovies;
-window.initializeSliderControls = initializeSliderControls; 
+window.initializeSliderControls = initializeSliderControls;
+window.shareLikedMovies = shareLikedMovies;
+window.closeShareModal = closeShareModal;
+window.copyToClipboard = copyToClipboard;
+window.shareViaEmail = shareViaEmail;
+window.shareViaTwitter = shareViaTwitter;
+window.shareViaFacebook = shareViaFacebook;
+window.shareViaWhatsApp = shareViaWhatsApp;
+window.shareNative = shareNative;
+window.handleEscKey = handleEscKey;
+window.removeSelectedMovie = removeSelectedMovie;
+window.displaySelectedMovie = displaySelectedMovie; 
