@@ -23,14 +23,15 @@ if (!isset($_GET['action'])) {
     exit;
 }
 
-// Set up common stream context
+// Set up common stream context for HTTP requests
 $opts = [
     'http' => [
         'method' => 'GET',
         'header' => [
             'Authorization: Bearer ' . TMDB_API_READ_ACCESS_TOKEN,
             'Accept: application/json'
-        ]
+        ],
+        'timeout' => 30
     ],
     'ssl' => [
         'verify_peer' => false,
@@ -55,6 +56,25 @@ switch ($_GET['action']) {
             'query' => $_GET['query']
         ];
         $url .= '?' . http_build_query($params);
+        
+        // Make the request
+        $response = file_get_contents($url, false, $context);
+        
+        if ($response === false) {
+            error_log("Failed to get response from TMDB API");
+            echo json_encode(['error' => 'Failed to connect to TMDB API']);
+            exit;
+        }
+        
+        // Check if the response is valid JSON
+        $data = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Invalid JSON response from TMDB API: " . json_last_error_msg());
+            echo json_encode(['error' => 'Invalid response from TMDB API']);
+            exit;
+        }
+        
+        echo $response;
         break;
         
     case 'more_movies':
@@ -326,35 +346,4 @@ switch ($_GET['action']) {
         error_log("Invalid action: " . $_GET['action']);
         echo json_encode(['error' => 'Invalid action']);
         exit;
-}
-
-error_log("Making request to TMDB API: " . $url);
-
-try {
-    // Make the request
-    $response = file_get_contents($url, false, $context);
-    
-    if ($response === false) {
-        error_log("Failed to get response from TMDB API");
-        echo json_encode(['error' => 'Failed to connect to TMDB API']);
-        exit;
-    }
-    
-    // Check if the response is valid JSON
-    $data = json_decode($response, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log("Invalid JSON response from TMDB API: " . json_last_error_msg());
-        echo json_encode(['error' => 'Invalid response from TMDB API']);
-        exit;
-    }
-    
-    // For search, just return the raw response
-    echo $response;
-    
-    error_log("Successfully processed API response");
-    
-} catch (Exception $e) {
-    error_log("Exception while making TMDB API request: " . $e->getMessage());
-    echo json_encode(['error' => 'Internal server error']);
-    exit;
 } 

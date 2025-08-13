@@ -63,4 +63,25 @@ if ($appEnv === 'development' && $appDebug === 'true') {
 }
 
 // Session configuration
-session_start(); 
+session_start();
+
+// Ensure data directory exists and is writable
+$dataDir = __DIR__ . '/data';
+if (!is_dir($dataDir)) {
+    mkdir($dataDir, 0755, true);
+}
+
+// Check if data files exist, create if they don't
+$sessionFile = $dataDir . '/session_data.json';
+if (!file_exists($sessionFile)) {
+    file_put_contents($sessionFile, json_encode([
+        'sessions' => []
+    ], JSON_PRETTY_PRINT));
+}
+
+$recHistoryFile = $dataDir . '/rec_history.json';
+if (!file_exists($recHistoryFile)) {
+    file_put_contents($recHistoryFile, json_encode([
+        'recommendations' => []
+    ], JSON_PRETTY_PRINT));
+} 
