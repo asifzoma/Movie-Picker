@@ -367,17 +367,12 @@
         <div class="container mx-auto px-4 py-12 relative z-10">
             <!-- Age Warning -->
             <div class="bg-red-900 bg-opacity-90 border border-red-700 rounded-lg p-4 mb-8 text-center">
-                <div class="flex flex-col items-center space-y-2">
-                    <div class="flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-red-400 text-xl mr-3"></i>
-                        <p class="text-red-100 font-semibold">
-                            <strong>⚠️ Important Disclaimers:</strong>
-                        </p>
-                    </div>
-                    <div class="text-red-100 text-sm space-y-1">
-                        <p><strong>Recommendation Disclaimer:</strong> All films shown are algorithmic recommendations based on your input. We do not guarantee these are perfect matches for your preferences.</p>
-                        <p><strong>Content Ratings:</strong> Please check individual movie ratings and reviews to ensure they are suitable for younger viewers before watching.</p>
-                    </div>
+                <div class="flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-xl mr-3"></i>
+                    <p class="text-red-100 font-semibold">
+                        <strong>⚠️ Age Warning:</strong> This site is intended for users 18 years and older. 
+                        Some movie content may contain mature themes and content.
+                    </p>
                 </div>
             </div>
             
