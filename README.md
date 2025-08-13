@@ -30,10 +30,15 @@ cd momo-movies
 
 3. Configure your web server to serve the project directory.
 
-4. (Optional) Update the TMDB API key in `config.php` if you want to use your own:
-```php
-define('TMDB_API_KEY', 'your_api_key_here');
-```
+4. **Configure your TMDB API credentials:**
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+   
+   # Edit .env and add your actual API credentials
+   TMDB_API_KEY=your_actual_api_key_here
+   TMDB_API_READ_ACCESS_TOKEN=your_actual_read_access_token_here
+   ```
 
 5. Access the application through your web browser:
 ```
@@ -43,9 +48,12 @@ http://localhost/momo-movies
 ## Project Structure
 
 - `index.php` - Main application file with UI
-- `config.php` - Configuration settings
+- `config.php` - Configuration settings and environment loading
 - `api.php` - API endpoint for AJAX requests
-- `tmdb_api.php` - TMDB API helper functions
+- `RecommendationEngine.php` - Core recommendation algorithm
+- `SessionManager.php` - Session and data management
+- `.env` - Environment variables (not tracked by git)
+- `.env.example` - Example environment file
 
 ## Credits
 
@@ -68,14 +76,20 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Security
 
-The TMDB API key is exposed in the frontend JavaScript code. In a production environment, you should:
+This application follows security best practices:
 
-1. Use environment variables to store the API key
-2. Implement proper rate limiting
-3. Add CSRF protection
-4. Add input validation and sanitization
-5. Use HTTPS
-6. Implement proper error handling
+✅ **API keys are stored in environment variables** (not in code)  
+✅ **Environment files are ignored by git**  
+✅ **No sensitive data is committed to version control**  
+✅ **Proper input validation and sanitization**  
+✅ **HTTPS recommended for production**  
+
+For production deployment, ensure:
+- Use HTTPS
+- Set up proper rate limiting
+- Configure secure session handling
+- Implement proper error handling
+- Use environment-specific configurations
 
 ## Support
 

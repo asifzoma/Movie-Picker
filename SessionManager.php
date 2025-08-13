@@ -27,7 +27,8 @@ class SessionManager {
                     'year_range' => [1950, date('Y')]
                 ],
                 'current_recommendations' => [],
-                'recommendation_queue' => []
+                'recommendation_queue' => [],
+                'user_input_movies' => []
             ];
         }
     }
@@ -180,6 +181,15 @@ class SessionManager {
         ];
         
         file_put_contents($this->dataFile, json_encode($sessionData, JSON_PRETTY_PRINT));
+    }
+    
+    public function setUserInputMovies($movies) {
+        $_SESSION[$this->sessionKey]['user_input_movies'] = $movies;
+        $this->saveSessionToFile();
+    }
+    
+    public function getUserInputMovies() {
+        return $_SESSION[$this->sessionKey]['user_input_movies'];
     }
     
     public function getSessionStats() {

@@ -1,76 +1,106 @@
 {
-    "session_id": "momo_6899b9d2163241.37955771",
-    "created_at": 1754905042,
+    "session_id": "momo_6897153c806687.04522832",
+    "created_at": 1754731836,
     "liked_movies": [
         {
-            "id": 629542,
-            "title": "The Bad Guys",
-            "poster_path": "\/7qop80YfuO0BwJa1uXk1DXUUEwv.jpg",
-            "release_date": "2022-01-01",
-            "vote_average": 7.5,
-            "genres": [],
-            "director": null,
-            "liked_at": 1754905065
-        },
-        {
-            "id": 528644,
-            "title": "Bilby",
-            "poster_path": "\/xjOrumBkIq6hDjijozRuja8Obo0.jpg",
-            "release_date": "2019-01-01",
-            "vote_average": 8,
-            "genres": [],
-            "director": null,
-            "liked_at": 1754944921
-        },
-        {
-            "id": 134,
-            "title": "O Brother, Where Art Thou?",
-            "poster_path": "\/s9foMAcLg8GEzzQzer04qOGdD1k.jpg",
-            "release_date": "2000-01-01",
+            "id": 10549,
+            "title": "Hamlet",
+            "poster_path": "\/ilurgUOp6SCl4cuhfjctj1qxlfZ.jpg",
+            "release_date": "1996-01-01",
             "vote_average": 7.3,
             "genres": [],
             "director": null,
-            "liked_at": 1754944924
+            "liked_at": 1755077332
         },
         {
-            "id": 378,
-            "title": "Raising Arizona",
-            "poster_path": "\/tPX13Qpq1SjqPzzMIaFtL8G4lYA.jpg",
-            "release_date": "1987-01-01",
-            "vote_average": 7.1,
+            "id": 10705,
+            "title": "Henry V",
+            "poster_path": "\/w9R2HsYNnfF3m9uEo2UAmPNJr8a.jpg",
+            "release_date": "1989-01-01",
+            "vote_average": 7.2,
             "genres": [],
             "director": null,
-            "liked_at": 1754944928
+            "liked_at": 1755077338
         },
         {
-            "id": 340884,
-            "title": "Scooby-Doo! and the Beach Beastie",
-            "poster_path": "\/6tqBzcWJ1MVeP2emyVEHTQHPyJA.jpg",
-            "release_date": "2015-01-01",
-            "vote_average": 8.4,
-            "genres": [],
-            "director": null,
-            "liked_at": 1754945218
-        },
-        {
-            "id": 1075794,
-            "title": "Leo",
-            "poster_path": "\/gSOVog7ydsaF1YpgAqBqnKYFGY.jpg",
+            "id": 945729,
+            "title": "A Haunting in Venice",
+            "poster_path": "\/l6iwxT0NbVw6QiF08YTIuTnXS82.jpg",
             "release_date": "2023-01-01",
-            "vote_average": 7.4,
+            "vote_average": 6.6,
             "genres": [],
             "director": null,
-            "liked_at": 1754945221
+            "liked_at": 1755077345
         },
         {
-            "id": 1181107,
-            "title": "The King of Kings",
-            "poster_path": "\/ccw7CCIAvcZV431CP7NhHAHuiHR.jpg",
-            "release_date": "2025-01-01",
+            "id": 11971,
+            "title": "Much Ado About Nothing",
+            "poster_path": "\/tvltGP6vYOkHdURag0jPSjhPUAV.jpg",
+            "release_date": "1993-01-01",
+            "vote_average": 6.9,
+            "genres": [],
+            "director": null,
+            "liked_at": 1755077354
+        },
+        {
+            "id": 637113,
+            "title": "Square One",
+            "poster_path": "\/sVsAd5QoMbzEBt2U3WnzwAGD0dU.jpg",
+            "release_date": "2019-01-01",
             "vote_average": 8.6,
             "genres": [],
             "director": null,
-            "liked_at": 1754945447
+            "liked_at": 1755077399
+        },
+        {
+            "id": 182026,
+            "title": "Stranger Things",
+            "poster_path": "\/4TKdguyacjYrC1Hnbi3PjSP8r3M.jpg",
+            "release_date": "2013-01-01",
+            "vote_average": 8.6,
+            "genres": [],
+            "director": null,
+            "liked_at": 1755077419
+        },
+        {
+            "id": 598,
+            "title": "City of God",
+            "poster_path": "\/k7eYdWvhYQyRQoU2TB2A2Xu2TfD.jpg",
+            "release_date": "2002-01-01",
+            "vote_average": 8.4,
+            "genres": [],
+            "director": null,
+            "liked_at": 1755077427
+        },
+        {
+            "id": 9495,
+            "title": "The Crow",
+            "poster_path": "\/rMMB3v6jYHjsvXRNJYESacoTD7j.jpg",
+            "release_date": "1994-01-01",
+            "vote_average": 7.5,
+            "genres": [],
+            "director": null,
+            "liked_at": 1755085031
+        },
+        {
+            "id": 319,
+            "title": "True Romance",
+            "poster_path": "\/39lXk6ud6KiJgGbbWI2PUKS7y2.jpg",
+            "release_date": "1993-01-01",
+            "vote_average": 7.5,
+            "genres": [],
+            "director": null,
+            "liked_at": 1755085033
+        },
+        {
+            "id": 1535,
+            "title": "Spy Game",
+            "poster_path": "\/6y8M1rxjKofQCRKKe6xeV91K2Fc.jpg",
+            "release_date": "2001-01-01",
+            "vote_average": 6.9,
+            "genres": [],
+            "director": null,
+            "liked_at": 1755085034
         }
     ],
     "user_preferences": {
@@ -78,7 +108,7 @@
         "directors": [],
         "actors": [],
         "vote_average_range": [
-            7,
+            6.5,
             10
         ],
         "year_range": [

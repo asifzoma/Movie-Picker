@@ -59,7 +59,7 @@ class RecommendationEngine {
         $recommendations = array_merge($recommendations, $directorMatches);
         
         // Remove duplicates and filter out already seen movies and franchises
-        $recommendations = $this->filterRecommendations($recommendations);
+        $recommendations = $this->filterRecommendations($recommendations, $userMovies);
         
         // Sort by relevance score
         $recommendations = $this->sortByRelevance($recommendations, $mergedProfile);
@@ -323,7 +323,7 @@ class RecommendationEngine {
         return $score;
     }
     
-    private function filterRecommendations($recommendations) {
+    private function filterRecommendations($recommendations, $userInputMovies = []) {
         $filtered = [];
         $seenIds = [];
         
@@ -332,10 +332,24 @@ class RecommendationEngine {
         $likedMovies = $this->sessionManager->getLikedMovies();
         $dislikedMovies = $this->sessionManager->getDislikedMovies();
         
+        // Get IDs of user's input movies to exclude them
+        $userInputIds = [];
+        foreach ($userInputMovies as $movie) {
+            if (isset($movie['id'])) {
+                $userInputIds[] = $movie['id'];
+            }
+        }
+        
+        // Log the filtering for debugging
+        if (!empty($userInputIds)) {
+            error_log("Filtering out user input movie IDs: " . implode(', ', $userInputIds));
+        }
+        
         $excludeIds = array_merge(
             array_column($history, 'id'),
             array_column($likedMovies, 'id'),
-            array_column($dislikedMovies, 'id')
+            array_column($dislikedMovies, 'id'),
+            $userInputIds  // Add user's input movie IDs to exclusion list
         );
         
         // Get franchise information for input movies to avoid franchise repetition
@@ -364,7 +378,7 @@ class RecommendationEngine {
         return $recommendations;
     }
     
-    public function getMoreRecommendations($currentCount = 0, $additionalCount = 5) {
+    public function getMoreRecommendations($currentCount = 0, $additionalCount = 5, $userInputMovies = []) {
         $userPrefs = $this->sessionManager->getUserPreferences();
         
         // Use more relaxed criteria for additional recommendations
@@ -396,7 +410,7 @@ class RecommendationEngine {
             }
         }
         
-        return $this->filterRecommendations($recommendations);
+        return $this->filterRecommendations($recommendations, $userInputMovies);
     }
     
     /**
@@ -404,9 +418,9 @@ class RecommendationEngine {
      */
     private function getInputMovieFranchises() {
         $franchises = [];
-        $userMovies = $this->sessionManager->getLikedMovies();
+        $userInputMovies = $this->sessionManager->getUserInputMovies();
         
-        foreach ($userMovies as $movie) {
+        foreach ($userInputMovies as $movie) {
             if (isset($movie['id'])) {
                 $details = $this->getMovieDetails($movie['id']);
                 if ($details && isset($details['belongs_to_collection'])) {

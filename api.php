@@ -169,6 +169,9 @@ switch ($_GET['action']) {
                 $movies['watched']
             ];
             
+            // Store user's input movies in session for future filtering
+            $sessionManager->setUserInputMovies($userMovies);
+            
             // Initialize recommendation engine
             $recommendationEngine = new RecommendationEngine($sessionManager);
             
@@ -296,7 +299,8 @@ switch ($_GET['action']) {
         
         try {
             $recommendationEngine = new RecommendationEngine($sessionManager);
-            $newMovies = $recommendationEngine->getMoreRecommendations($currentCount, 5);
+            $userInputMovies = $sessionManager->getUserInputMovies();
+            $newMovies = $recommendationEngine->getMoreRecommendations($currentCount, 5, $userInputMovies);
             
             if (!empty($newMovies)) {
                 $sessionManager->addToRecommendationQueue($newMovies);
