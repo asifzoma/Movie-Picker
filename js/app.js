@@ -87,6 +87,7 @@ elements.errorRetryBtn.addEventListener('click', () => {
 // Load liked movies on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadLikedMovies();
+    loadHomeLikedMovies(); // Load liked movies for home page
     
     // Update selected movie displays on page load
     updateAllSelectedMovieDisplays();
@@ -107,6 +108,19 @@ async function loadLikedMovies() {
         if (data.success) {
             console.log('✅ Successfully loaded liked movies');
             displayLikedMovies(data.movies);
+            
+            // Also update home section if it exists
+            const homeSection = document.getElementById('home-liked-movies');
+            if (homeSection) {
+                if (data.movies.length > 0) {
+                    displayHomeLikedMovies(data.movies);
+                    homeSection.classList.remove('hidden');
+                    console.log('✅ Home section updated and visible');
+                } else {
+                    homeSection.classList.add('hidden');
+                    console.log('📭 Home section hidden - no movies');
+                }
+            }
         } else {
             console.error('❌ Failed to load liked movies:', data.error);
         }
@@ -117,19 +131,29 @@ async function loadLikedMovies() {
 
 function displayLikedMovies(movies) {
     console.log('🎬 Displaying liked movies:', movies);
-    const container = document.getElementById('saved-movies-container');
-    console.log('📦 Container found:', container);
+    displayLikedMoviesInContainer(movies, 'home-saved-movies-container', initializeHomeSliderControls);
+}
+
+function displayLikedMoviesInContainer(movies, containerId, initCallback = null) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Container ${containerId} not found`);
+        return;
+    }
+    
+    console.log(`📦 Displaying ${movies.length} movies in ${containerId}`);
     container.innerHTML = '';
     
     if (movies.length === 0) {
-        console.log('📭 No movies to display, showing empty message');
-        container.innerHTML = '<p class="text-gray-500 text-center py-4">No movies saved yet</p>';
+        console.log('📭 No movies to display');
+        container.innerHTML = '';
         return;
     }
     
     movies.forEach(movie => {
         const movieCard = document.createElement('div');
         movieCard.className = 'saved-movie-card';
+        movieCard.style.cursor = 'pointer';
         
         const posterUrl = movie.poster_path ? 
             IMAGE_BASE_URL + movie.poster_path : 
@@ -144,15 +168,32 @@ function displayLikedMovies(movies) {
             <p class="saved-movie-year">${movie.release_date ? movie.release_date.substring(0, 4) : 'N/A'}</p>
         `;
         
+        // Add cursor pointer for visual feedback
+        movieCard.style.cursor = 'pointer';
+        
         container.appendChild(movieCard);
     });
     
-    // Initialize slider controls
-    initializeSliderControls();
+    // Initialize callback if provided
+    if (initCallback) {
+        initCallback();
+    }
 }
 
 async function removeLikedMovie(movieId, buttonElement) {
+    console.log('🗑️ Removing movie with ID:', movieId);
+    
     try {
+        // First remove the visual card immediately for better UX
+        if (buttonElement) {
+            const movieCard = buttonElement.closest('.saved-movie-card');
+            if (movieCard) {
+                movieCard.style.opacity = '0.5';
+                movieCard.style.pointerEvents = 'none';
+                console.log('👻 Made card semi-transparent while processing...');
+            }
+        }
+        
         const response = await fetch('api.php?action=remove_liked_movie', {
             method: 'POST',
             headers: {
@@ -163,53 +204,62 @@ async function removeLikedMovie(movieId, buttonElement) {
         const data = await response.json();
         
         if (data.success) {
-            // Remove the card from the DOM
-            const movieCard = buttonElement.closest('.saved-movie-card');
-            if (movieCard) {
-                movieCard.remove();
-                
-                // If no movies left, show empty message
-                const container = document.getElementById('saved-movies-container');
-                if (container.children.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500 text-center py-4">No movies saved yet</p>';
+            console.log('✅ Movie removed successfully from server');
+            
+            // Remove the specific card from DOM
+            if (buttonElement) {
+                const movieCard = buttonElement.closest('.saved-movie-card');
+                if (movieCard) {
+                    movieCard.remove();
+                    console.log('🗑️ Movie card removed from DOM');
+                }
+            }
+            
+            // Only refresh the data to get the correct count, but don't completely re-render if cards are still there
+            const remainingCards = document.querySelectorAll('.saved-movie-card');
+            console.log(`📊 Remaining cards after removal: ${remainingCards.length}`);
+            
+            // Check if we need to hide the sections because no movies are left
+            const refreshResponse = await fetch('api.php?action=get_liked_movies');
+            const refreshData = await refreshResponse.json();
+            
+            if (refreshData.success && refreshData.movies.length === 0) {
+                // Hide both sections if no movies left
+                const homeSection = document.getElementById('home-liked-movies');
+                if (homeSection) {
+                    homeSection.classList.add('hidden');
+                }
+                const resultsSection = document.querySelector('.saved-movies');
+                if (resultsSection) {
+                    resultsSection.classList.add('hidden');
+                }
+                console.log('📭 All sections hidden - no movies remaining');
+            }
+        } else {
+            console.error('❌ Failed to remove movie:', data.error);
+            // Restore the card if removal failed
+            if (buttonElement) {
+                const movieCard = buttonElement.closest('.saved-movie-card');
+                if (movieCard) {
+                    movieCard.style.opacity = '1';
+                    movieCard.style.pointerEvents = 'auto';
                 }
             }
         }
     } catch (error) {
-        console.error('Error removing liked movie:', error);
+        console.error('💥 Error removing liked movie:', error);
+        // Restore the card if there was an error
+        if (buttonElement) {
+            const movieCard = buttonElement.closest('.saved-movie-card');
+            if (movieCard) {
+                movieCard.style.opacity = '1';
+                movieCard.style.pointerEvents = 'auto';
+            }
+        }
     }
 }
 
-function initializeSliderControls() {
-    const slider = document.getElementById('saved-movies-container');
-    const scrollLeftBtn = document.getElementById('scroll-left');
-    const scrollRightBtn = document.getElementById('scroll-right');
-    
-    if (!slider || !scrollLeftBtn || !scrollRightBtn) return;
-    
-    // Show/hide scroll buttons based on scroll position
-    function updateScrollButtons() {
-        scrollLeftBtn.style.display = slider.scrollLeft > 0 ? 'flex' : 'none';
-        scrollRightBtn.style.display = 
-            slider.scrollLeft < (slider.scrollWidth - slider.clientWidth) ? 'flex' : 'none';
-    }
-    
-    // Scroll left
-    scrollLeftBtn.addEventListener('click', () => {
-        slider.scrollBy({ left: -200, behavior: 'smooth' });
-    });
-    
-    // Scroll right
-    scrollRightBtn.addEventListener('click', () => {
-        slider.scrollBy({ left: 200, behavior: 'smooth' });
-    });
-    
-    // Update buttons on scroll
-    slider.addEventListener('scroll', updateScrollButtons);
-    
-    // Initial button state
-    updateScrollButtons();
-}
+
 
 async function updateSessionStats(stats) {
     // Update stats display if you have one
@@ -226,7 +276,10 @@ async function clearAllLikedMovies() {
             const data = await response.json();
             
             if (data.success) {
-                loadLikedMovies(); // Reload the list
+                console.log('✅ All movies cleared, refreshing section');
+                
+                // Refresh the liked movies section
+                await loadLikedMovies();
             }
         } catch (error) {
             console.error('Error clearing liked movies:', error);
@@ -523,7 +576,7 @@ function updateAllSelectedMovieDisplays() {
 // Make functions available globally for onclick handlers
 window.removeLikedMovie = removeLikedMovie;
 window.clearAllLikedMovies = clearAllLikedMovies;
-window.initializeSliderControls = initializeSliderControls;
+window.initializeHomeSliderControls = initializeHomeSliderControls;
 window.shareLikedMovies = shareLikedMovies;
 window.closeShareModal = closeShareModal;
 window.copyToClipboard = copyToClipboard;
@@ -534,4 +587,116 @@ window.shareViaWhatsApp = shareViaWhatsApp;
 window.shareNative = shareNative;
 window.handleEscKey = handleEscKey;
 window.removeSelectedMovie = removeSelectedMovie;
-window.displaySelectedMovie = displaySelectedMovie; 
+window.displaySelectedMovie = displaySelectedMovie;
+window.loadLikedMovies = loadLikedMovies; // Make available globally
+window.openMovieDetailsModal = openMovieDetailsModal;
+window.closeMovieDetailsModal = closeMovieDetailsModal;
+
+
+// ===== HOME LIKED MOVIES FUNCTIONALITY =====
+
+async function loadHomeLikedMovies() {
+    console.log('🏠 Loading home page liked movies...');
+    try {
+        const response = await fetch('api.php?action=get_liked_movies');
+        const data = await response.json();
+        
+        if (data.success && data.movies.length > 0) {
+            console.log('✅ Successfully loaded home liked movies:', data.movies.length);
+            displayHomeLikedMovies(data.movies);
+            const homeSection = document.getElementById('home-liked-movies');
+            if (homeSection) {
+                homeSection.classList.remove('hidden');
+                console.log('✅ Home liked movies section is now visible');
+            }
+        } else {
+            console.log('📭 No liked movies to show on home page');
+            const homeSection = document.getElementById('home-liked-movies');
+            if (homeSection) {
+                homeSection.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('💥 Error loading home liked movies:', error);
+        const homeSection = document.getElementById('home-liked-movies');
+        if (homeSection) {
+            homeSection.classList.add('hidden');
+        }
+    }
+}
+
+function displayHomeLikedMovies(movies) {
+    console.log('🎬 Displaying home liked movies:', movies);
+    displayLikedMoviesInContainer(movies, 'home-saved-movies-container', initializeHomeSliderControls);
+}
+
+function initializeHomeSliderControls() {
+    const slider = document.getElementById('home-saved-movies-container');
+    const scrollLeftBtn = document.getElementById('home-scroll-left');
+    const scrollRightBtn = document.getElementById('home-scroll-right');
+    
+    if (!slider || !scrollLeftBtn || !scrollRightBtn) return;
+    
+    // Show/hide scroll buttons based on scroll position
+    function updateScrollButtons() {
+        scrollLeftBtn.style.display = slider.scrollLeft > 0 ? 'flex' : 'none';
+        scrollRightBtn.style.display = 
+            slider.scrollLeft < (slider.scrollWidth - slider.clientWidth) ? 'flex' : 'none';
+    }
+    
+    // Scroll left
+    scrollLeftBtn.addEventListener('click', () => {
+        slider.scrollBy({ left: -200, behavior: 'smooth' });
+    });
+    
+    // Scroll right
+    scrollRightBtn.addEventListener('click', () => {
+        slider.scrollBy({ left: 200, behavior: 'smooth' });
+    });
+    
+    // Update buttons on scroll
+    slider.addEventListener('scroll', updateScrollButtons);
+    
+    // Initial button state
+    updateScrollButtons();
+} 
+
+ 
+
+// ===== REFRESH LIKED MOVIES DATA =====
+
+/**
+ * Refresh liked movies data without clearing the containers
+ * This is used when movies are added/removed to keep both sections in sync
+ */
+async function refreshLikedMoviesData() {
+    try {
+        const response = await fetch('api.php?action=get_liked_movies');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update the home section if it exists and has movies
+            const homeSection = document.getElementById('home-liked-movies');
+            if (homeSection && data.movies.length > 0) {
+                // Only update if the section is visible
+                if (!homeSection.classList.contains('hidden')) {
+                    displayHomeLikedMovies(data.movies);
+                }
+            } else if (homeSection && data.movies.length === 0) {
+                // Hide the home section if no movies
+                homeSection.classList.add('hidden');
+            }
+            
+            // Update the recommendation section if it exists and has movies
+            const recSection = document.getElementById('saved-movies-container');
+            if (recSection && data.movies.length > 0) {
+                // Only update if the section is visible
+                if (recSection.closest('.saved-movies') && !recSection.closest('.saved-movies').classList.contains('hidden')) {
+                    displayLikedMovies(data.movies);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error refreshing liked movies data:', error);
+    }
+} 

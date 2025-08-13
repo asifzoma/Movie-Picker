@@ -135,12 +135,19 @@
             position: relative;
             transition: all 0.2s ease;
             border: 1px solid #374151;
+            cursor: pointer;
         }
         
         .saved-movie-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             border-color: #8b5cf6;
+            background-color: #374151;
+        }
+        
+        .saved-movie-card:active {
+            transform: translateY(-2px);
+            transition: transform 0.1s ease;
         }
         
         .saved-movie-poster {
@@ -349,6 +356,29 @@
             align-items: center !important;
             justify-content: center !important;
         }
+        
+        /* Home liked movies section styling */
+        #home-liked-movies {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            animation-delay: 0.3s;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Ensure proper spacing between sections */
+        #home-liked-movies + #result-section {
+            margin-top: 3rem;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -446,6 +476,7 @@
                     </form>
                 </div>
                 
+
                 <!-- Recommendation result -->
                 <div id="result-section" class="hidden mt-12">
                     <div class="flex justify-between items-center mb-6">
@@ -507,30 +538,34 @@
                     <!-- Hidden stack for next movies -->
                     <div id="movie-stack" class="hidden"></div>
                     
-                    <!-- Saved movies tray -->
-                    <div class="saved-movies mt-8">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold text-purple-400">Your Liked Movies</h3>
-                            <button onclick="clearAllLikedMovies()" class="text-red-400 hover:text-red-300 text-sm">
-                                <i class="fas fa-trash mr-1"></i> Clear All
-                            </button>
+
+                </div>
+                
+                <!-- Liked Movies Section -->
+                <div id="home-liked-movies" class="mt-12 hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="bebas text-3xl md:text-4xl text-purple-400">Your Liked Movies</h2>
+                        <button onclick="clearAllLikedMovies()" class="text-red-400 hover:text-red-300 text-sm">
+                            <i class="fas fa-trash mr-1"></i> Clear All
+                        </button>
+                    </div>
+                    
+                    <div class="saved-movies-slider-container">
+                        <div id="home-saved-movies-container" class="saved-movies-slider">
+                            <!-- Saved movies will be loaded here -->
                         </div>
-                        <div class="saved-movies-slider-container">
-                            <div id="saved-movies-container" class="saved-movies-slider">
-                                <!-- Saved movies will be added here -->
-                            </div>
-                            <button id="scroll-left" class="scroll-btn scroll-left">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button id="scroll-right" class="scroll-btn scroll-right">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <button onclick="shareLikedMovies()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                                <i class="fas fa-share-alt mr-2"></i> Share Movies
-                            </button>
-                        </div>
+                        <button id="home-scroll-left" class="scroll-btn scroll-left">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="home-scroll-right" class="scroll-btn scroll-right">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button onclick="shareLikedMovies()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-share-alt mr-2"></i> Share Movies
+                        </button>
                     </div>
                 </div>
                 
@@ -623,6 +658,8 @@
                 </div>
             </div>
         </div>
+        
+
         
         <!-- Footer -->
         <footer class="border-t border-gray-800 mt-20 py-8 text-center text-gray-500 text-sm">

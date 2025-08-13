@@ -225,27 +225,11 @@ export class MovieSwiper {
         
         this.savedMovies.add(movieId);
         
-        const currentMovie = this.getCurrentMovie();
-        const posterUrl = this.currentCard.querySelector('#movie-poster')?.src || 'https://via.placeholder.com/150x200/1a1a1a/ffffff?text=No+Poster';
-        
-        const movieCard = document.createElement('div');
-        movieCard.className = 'saved-movie-card';
-        movieCard.innerHTML = `
-            <button class="saved-movie-delete" onclick="removeLikedMovie(${movieId}, this)" title="Remove from liked movies">
-                <i class="fas fa-times"></i>
-            </button>
-            <img src="${posterUrl}" alt="${currentMovie.title}" class="saved-movie-poster">
-            <h4 class="saved-movie-title">${currentMovie.title}</h4>
-            <p class="saved-movie-year">${currentMovie.release_date ? currentMovie.release_date.substring(0, 4) : 'N/A'}</p>
-        `;
-        
-        if (this.savedMoviesContainer) {
-            this.savedMoviesContainer.appendChild(movieCard);
-            
-            // Update slider controls if they exist
-            if (window.initializeSliderControls) {
-                window.initializeSliderControls();
-            }
+        // Refresh both liked movie sections to keep them synchronized
+        if (window.loadLikedMovies) {
+            window.loadLikedMovies();
+        } else {
+            console.warn('loadLikedMovies function not available');
         }
     }
     
