@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+data
+*.md
+deploy.sh
+deploy.bat
+RecommendationEngine.php.backup
+RecommendationEngine_original.php
