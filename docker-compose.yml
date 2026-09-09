@@ -1,0 +1,27 @@
+services:
+  movie-picker:
+    build: .
+    container_name: movie-picker
+    restart: unless-stopped
+    volumes:
+      # config.php requires a real .env file on disk (it throws if missing),
+      # so bind-mount the host's file rather than using `env_file:`.
+      - ./.env:/var/www/html/.env:ro
+      - movie-picker-data:/var/www/html/data
+    networks:
+      - caddy_net
+    # No ports: published here on purpose — Caddy reaches this container
+    # over the shared "caddy_net" network by its service name (movie-picker:80).
+    # Uncomment for local testing without Caddy:
+    # ports:
+    #   - "8080:80"
+
+volumes:
+  movie-picker-data:
+
+networks:
+  caddy_net:
+    # This must be the same external network your existing Caddy container
+    # is attached to. If your Caddy compose file doesn't already define this
+    # network, create it once with: docker network create caddy_net
+    external: true

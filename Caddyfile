@@ -1,0 +1,22 @@
+# Add this block to your existing Caddy instance's Caddyfile (the one
+# already reverse-proxying your other Hetzner services). It does not need
+# its own Caddy container — as long as your Caddy container is attached to
+# the same "caddy_net" docker network as movie-picker (see docker-compose.yml),
+# it can reach this app by its service name and internal port 80.
+
+movies.example.com {
+    reverse_proxy movie-picker:80
+
+    encode gzip zstd
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    log {
+        output file /var/log/caddy/movie-picker-access.log
+    }
+}
